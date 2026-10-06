@@ -10,6 +10,8 @@ npm init -y
 
 npm install express
 
-npm install swagger-ui-express
+npm install sequelize
+
+npm install dotenv
 
 https://github.com/users/Fart1k/projects/6 --- Projekt
