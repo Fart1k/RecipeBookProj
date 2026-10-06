@@ -4,14 +4,8 @@ https://drive.google.com/file/d/1mN-_TCDRX_lyytXufgs3sGhUfKOwtxFV/view?usp=shari
 
 # Setup
 
-To start project you need to run commands in powershell
+To start project you need to run commands in terminal
 
-npm init -y
-
-npm install express
-
-npm install sequelize
-
-npm install dotenv
+npm i
 
 https://github.com/users/Fart1k/projects/6 --- Projekt
