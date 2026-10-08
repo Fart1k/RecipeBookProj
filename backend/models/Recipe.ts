@@ -1,14 +1,16 @@
+
 import { Sequelize, DataTypes } from "sequelize"
 
 export default function RecipeModel(
     sequelize: Sequelize,
     dataTypes: typeof DataTypes
-)
- {
+) {
     const Recipe = sequelize.define(
         "Recipe", {
             id: {
-                type: dataTypes.UUIDV4
+                type: dataTypes.UUID,
+                defaultValue: dataTypes.UUIDV4,
+                primaryKey: true
             },
             RecipeTitle: {
                 type: dataTypes.STRING,
@@ -25,17 +27,14 @@ export default function RecipeModel(
             ImageUrl: {
                 type: dataTypes.STRING
             },
-            //UserId
-            //CategoryId
             IsVisibleToOther: {
                 type: dataTypes.BOOLEAN
             },
             RatingOverall: {
                 type: dataTypes.TINYINT
-            },
-            //Comment<>
+            }
         }
-    ) 
- }
+    )
 
- //Things in coments will be added later because they are the foreign keys.
+    return Recipe
+}
