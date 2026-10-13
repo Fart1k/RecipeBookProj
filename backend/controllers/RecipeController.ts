@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { db } from "../db.ts";
 import Utilities from "../Utilities.ts";
 import { v7 as uuidv7 } from "uuid";
-import { READCOMMITTED } from "sequelize/lib/table-hints";
+
 
 const RecipeController = {
     async create(req: Request, res: Response) {
@@ -31,20 +31,21 @@ const RecipeController = {
 
         return res.status(201).json(createdRecipe);
     },
+
     async getAll(req: Request, res: Response) {
         const recipes = await db.recipe.findAll();
         console.log("getAll", recipes);
         return res
-        .status(200)
-        .send(
-            recipes.map
-            (
-                ({ id, Recipename }) => ({ id, Recipename })
-            )
-        );
+            .status(200)
+            .send(
+                recipes.map(
+                    ({ id, Recipename }) => ({ id, Recipename })
+                )
+            );
     },
-    async getByID(req: Request, res: Response) {
-        const recipeID: string = req.params.Id as string;
+
+    async getById(req: Request, res: Response) {
+        const recipeID: string = req.params.id as string;
         console.log(recipeID);
         const recipe = await db.recipe.findByPk(recipeID);
         if (!recipe) {
@@ -55,10 +56,11 @@ const RecipeController = {
         }
         return res.status(200).send(recipe);
     },
-    async modifyById(req: Request, res:Response){
-        const recipeToBeModified = await this.getById(req,res)
-        if (!recipeToBeModified){
-            return
+
+    async updateById(req: Request, res: Response) {
+        const recipeToBeModified: any = await this.getById(req, res);
+        if (!recipeToBeModified) {
+            return;
         }
         if (
             !req.body.RecipeTitle ||
@@ -69,8 +71,7 @@ const RecipeController = {
         ) {
             return res.status(400).send({
                 error: "Missing parameters, please review data"
-            }
-        );
+            });
         }
         recipeToBeModified.Recipename = req.body.RecipeTitle;
         recipeToBeModified.RecipeInstruction = req.body.Instructions;
@@ -78,15 +79,15 @@ const RecipeController = {
         recipeToBeModified.ImageURL = req.body.ImageUrl;
         recipeToBeModified.RatingOverall = req.body.RatingOverall;
 
-        await recipeToBeModified.save()
+        await recipeToBeModified.save();
 
-        return res.location(`${Utilities.getBaseURL(req)}/games/${recipeToBeModified.id}`)
-        .status(201)
-        .send(recipeToBeModified)
-    }
-  
-        async deleteById(req: Request, res: Response) {
-        const recipeToBeDeleted: any = await this.getByID(req, res);
+        return res.location(`${Utilities.getBaseURL(req)}/recipes/${recipeToBeModified.id}`)
+            .status(201)
+            .send(recipeToBeModified);
+    },
+
+    async deleteById(req: Request, res: Response) {
+        const recipeToBeDeleted: any = await this.getById(req, res);
         if (!recipeToBeDeleted) {
             return;
         }
@@ -94,13 +95,6 @@ const RecipeController = {
         await recipeToBeDeleted.destroy();
         return res.status(204).send({ error: "No content." });
     }
-    
-    }
-
-    
-
-
-
+};
 
 export default RecipeController;
-
