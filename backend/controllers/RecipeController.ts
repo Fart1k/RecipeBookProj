@@ -43,20 +43,50 @@ const RecipeController = {
             )
         );
     },
-    async getByID(req: Request, res: Response){
-        const recipeID: string = req.params.Id
-        console.log(recipeId)
-        const recipe = await db.recipe.findByPk(recipeID)
-        if(!recipe){
+    async getByID(req: Request, res: Response) {
+        const recipeID: string = req.params.Id as string;
+        console.log(recipeID);
+        const recipe = await db.recipe.findByPk(recipeID);
+        if (!recipe) {
             res.status(404).send({
-                error: `Game with this ID is not found ${recipeID}`
-            })
+                error: `Recipe with this ID is not found: ${recipeID}`
+            });
             return null;
         }
-        return recipe;
+        return res.status(200).send(recipe);
+    },
+    async modifyById(req: Request, res:Response){
+        const recipeToBeModified = await this.getById(req,res)
+        if (!recipeToBeModified){
+            return
+        }
+        if (
+            !req.body.RecipeTitle ||
+            !req.body.Instructions ||
+            !req.body.Ingredients ||
+            !req.body.ImageUrl ||
+            !req.body.RatingOverall
+        ) {
+            return res.status(400).send({
+                error: "Missing parameters, please review data"
+            }
+        );
+        }
+        recipeToBeModified.Recipename = req.body.RecipeTitle;
+        recipeToBeModified.RecipeInstruction = req.body.Instructions;
+        recipeToBeModified.RecipeIngredients = req.body.Ingredients;
+        recipeToBeModified.ImageURL = req.body.ImageUrl;
+        recipeToBeModified.RatingOverall = req.body.RatingOverall;
 
+        await recipeToBeModified.save()
+
+        return res.location(`${Utilities.getBaseURL(req)}/games/${recipeToBeModified.id}`)
+        .status(201)
+        .send(recipeToBeModified)
+    }
     }
 
-};
+
+
 
 export default RecipeController;
