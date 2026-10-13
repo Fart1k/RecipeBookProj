@@ -84,9 +84,23 @@ const RecipeController = {
         .status(201)
         .send(recipeToBeModified)
     }
+  
+        async deleteById(req: Request, res: Response) {
+        const recipeToBeDeleted: any = await this.getByID(req, res);
+        if (!recipeToBeDeleted) {
+            return;
+        }
+
+        await recipeToBeDeleted.destroy();
+        return res.status(204).send({ error: "No content." });
     }
+    
+    }
+
+    
 
 
 
 
 export default RecipeController;
+
