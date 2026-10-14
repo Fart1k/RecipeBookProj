@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes } from "sequelize"
 
-export default function CommentList(
+export default function CommentListModel(
     sequelize: Sequelize,
     dataTypes: typeof DataTypes
 ) {
@@ -17,4 +17,5 @@ export default function CommentList(
             }
         }
     )
+    return CommentList
 }
