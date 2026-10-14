@@ -22,4 +22,5 @@ export default function CredentialsModel(
             }
         }
     )
+    return Credential
 }
