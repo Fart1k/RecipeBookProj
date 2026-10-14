@@ -16,3 +16,5 @@ const Utilities = {
         return await bcrypt.compare(givenPassword, givenHash)
     }
 }
+
+export default Utilities

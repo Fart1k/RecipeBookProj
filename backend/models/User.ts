@@ -20,5 +20,7 @@ export default function UserModel(
 
         }
     )
+
+    console.log(User === sequelize.models.User)
+    return User
 }
-console.log(User === )

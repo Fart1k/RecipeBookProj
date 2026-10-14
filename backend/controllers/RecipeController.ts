@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { db } from "../db.ts";
-import Utilities from "../Utilities.ts";
+import Utilities from "./Utilities.ts";
 import { v7 as uuidv7 } from "uuid";
-import { READCOMMITTED } from "sequelize/lib/table-hints";
+import { error } from "node:console"
 
 const RecipeController = {
     async create(req: Request, res: Response) {
@@ -27,12 +27,12 @@ const RecipeController = {
             RatingOverall: req.body.RatingOverall
         };
 
-        const createdRecipe = await db.recipe.create(newRecipe);
+        const createdRecipe = await db.recipes.create(newRecipe);
 
         return res.status(201).json(createdRecipe);
     },
     async getAll(req: Request, res: Response) {
-        const recipes = await db.recipe.findAll();
+        const recipes = await db.recipes.findAll();
         console.log("getAll", recipes);
         return res
         .status(200)
@@ -46,7 +46,7 @@ const RecipeController = {
     async getByID(req: Request, res: Response) {
         const recipeID: string = req.params.Id as string;
         console.log(recipeID);
-        const recipe = await db.recipe.findByPk(recipeID);
+        const recipe = await db.recipes.findByPk(recipeID);
         if (!recipe) {
             res.status(404).send({
                 error: `Recipe with this ID is not found: ${recipeID}`
@@ -83,9 +83,9 @@ const RecipeController = {
         return res.location(`${Utilities.getBaseURL(req)}/games/${recipeToBeModified.id}`)
         .status(201)
         .send(recipeToBeModified)
-    }
+    },
   
-        async deleteById(req: Request, res: Response) {
+    async deleteById(req: Request, res: Response) {
         const recipeToBeDeleted: any = await this.getByID(req, res);
         if (!recipeToBeDeleted) {
             return;

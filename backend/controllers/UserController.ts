@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { db } from "../db.ts";
-import Utilities from "./Utilites.ts";
+import Utilities from "./Utilities.ts";
 import { v7 as uuidv7 } from "uuid";
 
 const UsersController = {
@@ -32,7 +32,7 @@ const UsersController = {
 
         newUser.Passwordhash = await Utilities.gimmePassword(req.ReportBody.Password)
 
-        const result = await db.user.create(newUser)
+        const result = await db.users.create(newUser)
 
         return res.location(`${Utilities.getBaseURL(req)}/users/${result.id}`)
             .sendStatus(201)
