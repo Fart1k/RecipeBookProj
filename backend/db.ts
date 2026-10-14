@@ -4,6 +4,7 @@ import RecipeModel from "./models/Recipe.ts";
 import UserModel from "./models/User.ts";
 import CategoryModel from "./models/Category.ts";
 import CredentialsModel from "./models/Credentials.ts";
+import FavoriteModel from "./models/Favorites.ts";
 
 
 
@@ -34,7 +35,8 @@ const db = {
     recipe: RecipeModel(sequelize, DataTypes),
     users: UserModel(sequelize, DataTypes),
     category: CategoryModel(sequelize, DataTypes),
-    credential: CredentialsModel(sequelize, DataTypes)
+    credential: CredentialsModel(sequelize, DataTypes),
+    favorite: FavoriteModel(sequelize, DataTypes),
     // recipes: require("../backend/models/Recipe.ts")(sequelize, DataTypes),
     // users: require("../backend/models/User.ts")(sequelize, DataTypes)
 };

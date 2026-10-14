@@ -12,7 +12,7 @@ export default function CredentialsModel(
                 primaryKey: true
             },
             UserId: {
-                type: dataTypes.STRING,
+                type: dataTypes.UUID,
                 allowNull: false
             },
             //List<Credentials>
