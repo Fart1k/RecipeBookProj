@@ -5,8 +5,8 @@ import UserModel from "./models/User.ts";
 import CategoryModel from "./models/Category.ts";
 import CredentialsModel from "./models/Credentials.ts";
 import FavoriteModel from "./models/Favorites.ts";
-import CommentList from "./models/CommentsList.ts";
 import CommentModel from "./models/Commets.ts";
+import CommentListModel from "./models/CommentsList.ts";
 
 
 
