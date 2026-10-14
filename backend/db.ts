@@ -2,6 +2,7 @@ import { Sequelize, DataTypes } from "sequelize";
 
 import RecipeModel from "./models/Recipe.ts";
 import UserModel from "./models/User.ts";
+import CategoryModel from "./models/Category.ts";
 
 
 
@@ -30,7 +31,8 @@ const db = {
     Sequelize,
     sequelize,
     recipe: RecipeModel(sequelize, DataTypes),
-    users: UserModel(sequelize, DataTypes)
+    users: UserModel(sequelize, DataTypes),
+    category: CategoryModel(sequelize, DataTypes)
     // recipes: require("../backend/models/Recipe.ts")(sequelize, DataTypes),
     // users: require("../backend/models/User.ts")(sequelize, DataTypes)
 };
