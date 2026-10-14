@@ -20,33 +20,28 @@ const RecipeController = {
 
         const newRecipe = {
             id: uuidv7(),
-            Recipename: req.body.RecipeTitle,
-            RecipeInstruction: req.body.Instructions,
-            RecipeIngredients: req.body.Ingredients,
+            RecipeTitle: req.body.RecipeTitle,
+            Instruction: req.body.Instructions,
+            Ingredients: req.body.Ingredients,
             ImageURL: req.body.ImageUrl,
             RatingOverall: req.body.RatingOverall
         };
 
-        const createdRecipe = await db.recipes.create(newRecipe);
+        const createdRecipe = await db.recipe.create(newRecipe);
 
         return res.status(201).json(createdRecipe);
     },
     async getAll(req: Request, res: Response) {
-        const recipes = await db.recipes.findAll();
+        const recipes = await db.recipe.findAll();
         console.log("getAll", recipes);
         return res
         .status(200)
-        .send(
-            recipes.map
-            (
-                ({ id, Recipename }) => ({ id, Recipename })
-            )
-        );
+        .send(recipes.map(({ id, RecipeTitle }: any) => ({ id, RecipeTitle })))
     },
     async getByID(req: Request, res: Response) {
-        const recipeID: string = req.params.Id as string;
+        const recipeID: string = req.params.ID as string;
         console.log(recipeID);
-        const recipe = await db.recipes.findByPk(recipeID);
+        const recipe = await db.recipe.findByPk(recipeID);
         if (!recipe) {
             res.status(404).send({
                 error: `Recipe with this ID is not found: ${recipeID}`
@@ -56,7 +51,7 @@ const RecipeController = {
         return res.status(200).send(recipe);
     },
     async modifyById(req: Request, res:Response){
-        const recipeToBeModified = await this.getById(req,res)
+        const recipeToBeModified = await this.getByID(req,res)
         if (!recipeToBeModified){
             return
         }
@@ -72,9 +67,9 @@ const RecipeController = {
             }
         );
         }
-        recipeToBeModified.Recipename = req.body.RecipeTitle;
-        recipeToBeModified.RecipeInstruction = req.body.Instructions;
-        recipeToBeModified.RecipeIngredients = req.body.Ingredients;
+        recipeToBeModified.RecipeTitle = req.body.RecipeTitle;
+        recipeToBeModified.Instruction = req.body.Instructions;
+        recipeToBeModified.Ingredients = req.body.Ingredients;
         recipeToBeModified.ImageURL = req.body.ImageUrl;
         recipeToBeModified.RatingOverall = req.body.RatingOverall;
 
@@ -95,12 +90,6 @@ const RecipeController = {
         return res.status(204).send({ error: "No content." });
     }
     
-    }
-
-    
-
-
-
+}
 
 export default RecipeController;
-

@@ -4,7 +4,8 @@
   "description": "https://drive.google.com/file/d/1mN-_TCDRX_lyytXufgs3sGhUfKOwtxFV/view?usp=sharing",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx backend/src/index.ts",
+    "start": "tsx backend/src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,15 @@
     "cors": "^2.8.6",
     "dotenv": "^18.0.5",
     "express": "^5.2.1",
+    "mariadb": "^3.5.4",
     "sequelize": "^6.37.8",
     "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }

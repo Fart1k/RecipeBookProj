@@ -3,6 +3,8 @@ import { Sequelize, DataTypes } from "sequelize";
 import RecipeModel from "./models/Recipe.ts";
 import UserModel from "./models/User.ts";
 
+
+
 const sequelize = new Sequelize(
     process.env.DB_NAME!,
     process.env.DB_USERNAME!,
@@ -27,9 +29,10 @@ const connect = async (): Promise<void> => {
 const db = {
     Sequelize,
     sequelize,
-    //recipe: RecipeModel(sequelize, DataTypes),
-    recipes: require("../backend/models/Recipe.ts")(sequelize, DataTypes),
-    users: require("../backend/models/User.ts")(sequelize, DataTypes)
+    recipe: RecipeModel(sequelize, DataTypes),
+    users: UserModel(sequelize, DataTypes)
+    // recipes: require("../backend/models/Recipe.ts")(sequelize, DataTypes),
+    // users: require("../backend/models/User.ts")(sequelize, DataTypes)
 };
 
 const sync = async(): Promise<void> => {
