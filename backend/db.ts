@@ -1,6 +1,7 @@
 import { Sequelize, DataTypes } from "sequelize";
 
 import RecipeModel from "./models/Recipe";
+import UserModel from "./models/User";
 
 const sequelize = new Sequelize(
     process.env.DB_NAME!,
