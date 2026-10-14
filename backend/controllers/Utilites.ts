@@ -1,6 +1,18 @@
 import {Request} from "express";
 //installi bycrpt hiljem siia tuleb hassing ka
+import bcrypt from "bcrypt"
 
-export const getBaseURL = {req: Request}: string =>{
-    return `${req.protocol}://${req.get}`
+const Utilities = {
+    getBaseURL(req: Request) : string {
+        return `${req.protocol}://${req.get("host")}`
+    },
+
+    async gimmePassword(password: string): Promise<string> {
+        const saltRounds = 10
+        return await bcrypt.hash(password, saltRounds)
+    },
+
+    async letMeIn(givenPassword: string, givenHash: string): Promise<boolean> {
+        return await bcrypt.compare(givenPassword, givenHash)
+    }
 }
