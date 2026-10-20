@@ -33,7 +33,11 @@ const RecipeController = {
     },
 
     async getAll(req: Request, res: Response) {
-        const recipes = await db.recipes.findAll();
+        const recipes = await db.recipes.findAll({
+            where: {
+                Status: true
+            }
+        });
         console.log("getAll", recipes);
         return res
         .status(200)
