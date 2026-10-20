@@ -4,7 +4,11 @@ import { db } from "../db.ts"
 const AdminController = {
     async getAllRecipes(req: Request, res: Response) {
         try {
-            const recipes = await db.recipes.findAll()
+            const recipes = await db.recipes.findAll({
+                where: {
+                    Status: false
+                }
+            })
 
             return res.status(200).send(
                 recipes.map((recipe: any) => ({
