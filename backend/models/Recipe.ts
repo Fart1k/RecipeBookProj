@@ -32,6 +32,9 @@ export default function RecipeModel(
             },
             RatingOverall: {
                 type: dataTypes.TINYINT
+            },
+            Status: {
+                type: dataTypes.BOOLEAN
             }
         }
     )
