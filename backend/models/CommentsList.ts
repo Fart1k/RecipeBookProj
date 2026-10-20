@@ -5,7 +5,7 @@ export default function CommentListModel(
     dataTypes: typeof DataTypes
 ) {
     const CommentList = sequelize.define(
-        "Recipe",{
+        "CommentList",{
             id: {
                 type: dataTypes.UUID,
                 defaultValue: dataTypes.UUIDV4,

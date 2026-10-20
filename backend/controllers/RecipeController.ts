@@ -27,13 +27,13 @@ const RecipeController = {
             RatingOverall: req.body.RatingOverall
         };
 
-        const createdRecipe = await db.recipe.create(newRecipe);
+        const createdRecipe = await db.recipes.create(newRecipe);
 
         return res.status(201).json(createdRecipe);
     },
 
     async getAll(req: Request, res: Response) {
-        const recipes = await db.recipe.findAll();
+        const recipes = await db.recipes.findAll();
         console.log("getAll", recipes);
         return res
         .status(200)
@@ -42,7 +42,7 @@ const RecipeController = {
     async getByID(req: Request, res: Response) {
         const recipeID: string = req.params.ID as string;
         console.log(recipeID);
-        const recipe = await db.recipe.findByPk(recipeID);
+        const recipe = await db.recipes.findByPk(recipeID);
         if (!recipe) {
             res.status(404).send({
                 error: `Recipe with this ID is not found: ${recipeID}`

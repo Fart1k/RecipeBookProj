@@ -34,7 +34,7 @@ const connect = async (): Promise<void> => {
 const db = {
     Sequelize,
     sequelize,
-    recipe: RecipeModel(sequelize, DataTypes),
+    recipes: RecipeModel(sequelize, DataTypes),
     users: UserModel(sequelize, DataTypes),
     category: CategoryModel(sequelize, DataTypes),
     credential: CredentialsModel(sequelize, DataTypes),

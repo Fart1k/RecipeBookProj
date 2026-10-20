@@ -5,7 +5,7 @@ export default function FavoriteModel(
     dataTypes: typeof DataTypes
 ) {
     const Favorite = sequelize.define(
-        "Recipe", {
+        "Favorite", {
             id: {
                 type: dataTypes.UUID,
                 defaultValue: dataTypes.UUIDV4,
