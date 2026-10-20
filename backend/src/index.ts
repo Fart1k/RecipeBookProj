@@ -18,4 +18,5 @@ app.listen(port, async()=>{
     if(process.env.SYNC === "true"){
         await sync();
     }
+    console.log(`api jookseb aadressil http://${host}:${port}`)
 })

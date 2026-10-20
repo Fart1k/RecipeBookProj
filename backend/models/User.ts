@@ -6,10 +6,10 @@ export default function UserModel(
 ){
     const User = sequelize.define(
         "User",{ 
-        id: {type: dataTypes.UUIDV4, primaryKey: true},
+        id: {type: dataTypes.UUID, defaultValue: dataTypes.UUIDV4, primaryKey: true},
         UserName: {type: dataTypes.STRING, allowNull: false},
         PasswordHash: {type: dataTypes.STRING, allowNull: false},
-        SignUpDate: {type: dataTypes.DATEONLY, defaultValue: Date.now()},
+        SignUpDate: {type: dataTypes.DATEONLY, defaultValue: Date.now},
         UserStatus: {type: dataTypes.STRING, defaultValue:"unverified"},
         //statuses: unverified, user, admin , banned, deleted
         UserCollectionID: {type: dataTypes.STRING},
