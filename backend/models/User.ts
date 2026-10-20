@@ -11,7 +11,6 @@ export default function UserModel(
         PasswordHash: {type: dataTypes.STRING, allowNull: false},
         SignUpDate: {type: dataTypes.DATEONLY, defaultValue: Date.now()},
         UserStatus: {type: dataTypes.STRING, defaultValue:"unverified"},
-        //statuses: unverified, user, admin , banned, deleted
         UserCollectionID: {type: dataTypes.STRING},
         ReviewListID: {type: dataTypes.STRING},
         ProfileID: {type: dataTypes.STRING, allowNull: true},
