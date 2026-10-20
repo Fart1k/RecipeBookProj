@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { db } from "../db.ts";
-import Utilities from "../Utilities.ts";
+import Utilities from "./Utilities.ts";
 import { v7 as uuidv7 } from "uuid";
-
+import { error } from "node:console"
 
 const RecipeController = {
     async create(req: Request, res: Response) {
@@ -20,9 +20,9 @@ const RecipeController = {
 
         const newRecipe = {
             id: uuidv7(),
-            Recipename: req.body.RecipeTitle,
-            RecipeInstruction: req.body.Instructions,
-            RecipeIngredients: req.body.Ingredients,
+            RecipeTitle: req.body.RecipeTitle,
+            Instruction: req.body.Instructions,
+            Ingredients: req.body.Ingredients,
             ImageURL: req.body.ImageUrl,
             RatingOverall: req.body.RatingOverall
         };
@@ -36,16 +36,11 @@ const RecipeController = {
         const recipes = await db.recipe.findAll();
         console.log("getAll", recipes);
         return res
-            .status(200)
-            .send(
-                recipes.map(
-                    ({ id, Recipename }) => ({ id, Recipename })
-                )
-            );
+        .status(200)
+        .send(recipes.map(({ id, RecipeTitle }: any) => ({ id, RecipeTitle })))
     },
-
-    async getById(req: Request, res: Response) {
-        const recipeID: string = req.params.id as string;
+    async getByID(req: Request, res: Response) {
+        const recipeID: string = req.params.ID as string;
         console.log(recipeID);
         const recipe = await db.recipe.findByPk(recipeID);
         if (!recipe) {
@@ -56,11 +51,10 @@ const RecipeController = {
         }
         return res.status(200).send(recipe);
     },
-
-    async updateById(req: Request, res: Response) {
-        const recipeToBeModified: any = await this.getById(req, res);
-        if (!recipeToBeModified) {
-            return;
+    async modifyById(req: Request, res:Response){
+        const recipeToBeModified = await this.getByID(req,res)
+        if (!recipeToBeModified){
+            return
         }
         if (
             !req.body.RecipeTitle ||
@@ -73,21 +67,21 @@ const RecipeController = {
                 error: "Missing parameters, please review data"
             });
         }
-        recipeToBeModified.Recipename = req.body.RecipeTitle;
-        recipeToBeModified.RecipeInstruction = req.body.Instructions;
-        recipeToBeModified.RecipeIngredients = req.body.Ingredients;
+        recipeToBeModified.RecipeTitle = req.body.RecipeTitle;
+        recipeToBeModified.Instruction = req.body.Instructions;
+        recipeToBeModified.Ingredients = req.body.Ingredients;
         recipeToBeModified.ImageURL = req.body.ImageUrl;
         recipeToBeModified.RatingOverall = req.body.RatingOverall;
 
         await recipeToBeModified.save();
 
-        return res.location(`${Utilities.getBaseURL(req)}/recipes/${recipeToBeModified.id}`)
-            .status(201)
-            .send(recipeToBeModified);
+        return res.location(`${Utilities.getBaseURL(req)}/games/${recipeToBeModified.id}`)
+        .status(201)
+        .send(recipeToBeModified)
     },
-
+  
     async deleteById(req: Request, res: Response) {
-        const recipeToBeDeleted: any = await this.getById(req, res);
+        const recipeToBeDeleted: any = await this.getByID(req, res);
         if (!recipeToBeDeleted) {
             return;
         }
@@ -95,6 +89,7 @@ const RecipeController = {
         await recipeToBeDeleted.destroy();
         return res.status(204).send({ error: "No content." });
     }
-};
+    
+}
 
 export default RecipeController;

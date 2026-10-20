@@ -8,16 +8,17 @@ export default (app: Express): void => {
     .post(RecipeController.create);
 
   app.route("/recipes/:id")
-    .get(RecipeController.getById)
-    .put(RecipeController.updateById)
+    .get(RecipeController.getByID)
+    .put(RecipeController.modifyById)
     .delete(RecipeController.deleteById);
 
   app.route("/users")
-    .get(UserController.getAll)
+    // .get(UserController.getAll)
     .post(UserController.create);
 
   app.route("/users/:id")
-    .get(UserController.getById)
-    .put(UserController.updateById)
-    .delete(UserController.deleteById);
+    // .get(UserController.getById)
+    // .put(UserController.updateById)
+    // .delete(UserController.deleteById);
 };
+// Kommenteeritud asjad hetkel pole veel valmis

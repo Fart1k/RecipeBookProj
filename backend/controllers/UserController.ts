@@ -25,13 +25,17 @@ const UsersController = {
             id: uuidv7(),
             UserName: req.body.UserName,
             EmailAddress: req.body.EmailAddress,
-            SignUpDate: Date.now,
+            SignUpDate: Date.now(),
             UserStatus: "unverified",
-            Passwordhash: ""
+            PasswordHash: ""
         }
-        newUser.Passwordhash = Utilities.gimmePassword(req.ReportBody.Password)
 
-       
+        newUser.PasswordHash = await Utilities.gimmePassword(req.body.Password)
+
+        const result = await db.users.create(newUser)
+
+        return res.location(`${Utilities.getBaseURL(req)}/users/${result.get("id")}`)
+            .sendStatus(201)
     }
 };
 
