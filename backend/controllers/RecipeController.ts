@@ -31,6 +31,7 @@ const RecipeController = {
 
         return res.status(201).json(createdRecipe);
     },
+
     async getAll(req: Request, res: Response) {
         const recipes = await db.recipe.findAll();
         console.log("getAll", recipes);
@@ -64,8 +65,7 @@ const RecipeController = {
         ) {
             return res.status(400).send({
                 error: "Missing parameters, please review data"
-            }
-        );
+            });
         }
         recipeToBeModified.RecipeTitle = req.body.RecipeTitle;
         recipeToBeModified.Instruction = req.body.Instructions;
@@ -73,7 +73,7 @@ const RecipeController = {
         recipeToBeModified.ImageURL = req.body.ImageUrl;
         recipeToBeModified.RatingOverall = req.body.RatingOverall;
 
-        await recipeToBeModified.save()
+        await recipeToBeModified.save();
 
         return res.location(`${Utilities.getBaseURL(req)}/games/${recipeToBeModified.id}`)
         .status(201)
