@@ -3,6 +3,7 @@ import RecipeController from "../controllers/RecipeController";
 import UserController from "../controllers/UserController";
 
 export default (app: Express): void => {
+ 
   app.route("/recipes")
     .get(RecipeController.getAll)
     .post(RecipeController.create);
@@ -12,13 +13,10 @@ export default (app: Express): void => {
     .put(RecipeController.modifyById)
     .delete(RecipeController.deleteById);
 
-  app.route("/users")
-    // .get(UserController.getAll)
+  
+  app.route("/users/register")
     .post(UserController.create);
 
-  app.route("/users/:id")
-    // .get(UserController.getById)
-    // .put(UserController.updateById)
-    // .delete(UserController.deleteById);
+  app.route("/users/login")
+    .post(UserController.login);
 };
-// Kommenteeritud asjad hetkel pole veel valmis
