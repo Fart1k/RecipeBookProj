@@ -7,6 +7,7 @@ import CredentialsModel from "./models/Credentials.ts";
 import FavoriteModel from "./models/Favorites.ts";
 import CommentModel from "./models/Commets.ts";
 import CommentListModel from "./models/CommentsList.ts";
+import UserRecipesCollectionModel from "./models/UserRecipesCollection.ts"
 
 
 
@@ -30,26 +31,38 @@ const connect = async (): Promise<void> => {
         console.log("db connection error", error);
     }
 }
+const _Recipe = RecipeModel(sequelize, DataTypes)
+const _User = UserModel(sequelize, DataTypes)
+const _Category = CategoryModel(sequelize, DataTypes)
+const _Credentials = CredentialsModel(sequelize, DataTypes)
+const _Favorite = FavoriteModel(sequelize, DataTypes)
+const _CommentList = CommentListModel(sequelize, DataTypes)
+const _Comment = CommentModel(sequelize, DataTypes)
+const _UserRecipesCollections = UserRecipesCollectionModel(sequelize, DataTypes)
+
+_User.hasMany(_UserRecipesCollections, {foreignKey: "UserId" as "User"})
+_UserRecipesCollections.belongsTo(_User, {foreignKey: "UserId" as "RecipeId"})
 
 const db = {
     Sequelize,
     sequelize,
-    recipes: RecipeModel(sequelize, DataTypes),
-    users: UserModel(sequelize, DataTypes),
-    category: CategoryModel(sequelize, DataTypes),
-    credential: CredentialsModel(sequelize, DataTypes),
-    favorite: FavoriteModel(sequelize, DataTypes),
-    commentList: CommentListModel(sequelize, DataTypes),
-    comment: CommentModel(sequelize, DataTypes),
-    userRecipesCollection: require("../backend/models/UserRecipesCollection.ts")(sequelize, DataTypes),
+    recipes: _Recipe,
+    users: _User,
+    category: _Category,
+    credential: _Credentials,
+    favorite: _Favorite,
+    commentList: _CommentList,
+    comment: _Comment,
+    userRecipesCollection: _UserRecipesCollections
+    //userRecipesCollection: UserRecipesCollectionModel(sequelize, DataTypes)
 
 };
-db.userRecipesCollection = require("../backend/models/UserRecipesCollection.ts")(sequelize, DataTypes, db.recipes, db.users),
-db.recipes.belongsToMany(db.users, {through: db.userRecipesCollection, as: "UserId"})
-db.users.belongsTo(db.recipes, {through: db.userRecipesCollection, as: "RecipeId"})
+// db.userRecipesCollection = require("../backend/models/UserRecipesCollection.ts")(sequelize, DataTypes, db.recipes, db.users),
+// db.recipes.belongsToMany(db.users, {through: db.userRecipesCollection, as: "UserId"})
+// db.users.belongsTo(db.recipes, {through: db.userRecipesCollection, as: "RecipeId"})
 
-db.users.hasMany(db.userRecipesCollection, {foreignKey: "UserId" as "RecipeId"})
-db.userRecipesCollection.belongsTo(db.users, {foreignKey: "UserId" as "RecipeId"})
+// db.users.hasMany(db.userRecipesCollection, {foreignKey: "UserId" as "RecipeId"})
+// db.userRecipesCollection.belongsTo(db.users, {foreignKey: "UserId" as "RecipeId"})
 
 const sync = async(): Promise<void> => {
     await sequelize.sync({ alter: true })

@@ -30,4 +30,6 @@ export default function UserRecipesCollectionModel(
             }
         }
     )
+    console.log(UserRecipesCollection === sequelize.models.UserRecipesCollection)
+    return UserRecipesCollection
 }
