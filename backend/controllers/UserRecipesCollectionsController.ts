@@ -26,6 +26,7 @@ const UserRecipesCollectionsController = {
 
         const addedUserRecipeCollection = await db.userRecipesCollection.create(newUserRecipeCollection)
 
-        return res.location(`${Utilities.getBaseURL(req)}/usercollections/${addedUserRecipeCollection.id}`).status(201)
+        return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${addedUserRecipeCollection.id}`).status(201)
     }
 }
+export default UserRecipesCollectionsController
