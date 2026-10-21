@@ -40,10 +40,16 @@ const db = {
     credential: CredentialsModel(sequelize, DataTypes),
     favorite: FavoriteModel(sequelize, DataTypes),
     commentList: CommentListModel(sequelize, DataTypes),
-    commnet: CommentModel(sequelize, DataTypes),
-    // recipes: require("../backend/models/Recipe.ts")(sequelize, DataTypes),
-    // users: require("../backend/models/User.ts")(sequelize, DataTypes)
+    comment: CommentModel(sequelize, DataTypes),
+    userRecipesCollection: require("../backend/models/UserRecipesCollection.ts")(sequelize, DataTypes),
+
 };
+db.userRecipesCollection = require("../backend/models/UserRecipesCollection.ts")(sequelize, DataTypes, db.recipes, db.users),
+db.recipes.belongsToMany(db.users, {through: db.userRecipesCollection, as: "UserId"})
+db.users.belongsTo(db.recipes, {through: db.userRecipesCollection, as: "RecipeId"})
+
+db.users.hasMany(db.userRecipesCollection, {foreignKey: "UserId" as "RecipeId"})
+db.userRecipesCollection.belongsTo(db.users, {foreignKey: "UserId" as "RecipeId"})
 
 const sync = async(): Promise<void> => {
     await sequelize.sync({ alter: true })
