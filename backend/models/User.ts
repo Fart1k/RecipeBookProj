@@ -14,8 +14,8 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare UserRecipesCollectionId: CreationOptional<Json | null>
     declare CommentsListId: CreationOptional<Json | null>
 
-    declare createdAt: CreationOptional<string | null>
-    declare updatedAt: CreationOptional<string | null>
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
 }
 
 export default function UserModel(

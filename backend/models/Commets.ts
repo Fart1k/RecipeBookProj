@@ -11,8 +11,8 @@ export class Comment extends Model<InferAttributes<Comment>, InferCreationAttrib
     declare CommentListId: Json
 
     declare Rating: CreationOptional<number | null>
-    declare createdAt: CreationOptional<string | null>
-    declare updatedAt: CreationOptional<string | null>
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
 }
 
 export default function initCommentModel(

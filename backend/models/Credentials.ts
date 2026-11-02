@@ -8,8 +8,8 @@ export class Credential extends Model<InferAttributes<Credential>, InferCreation
     declare UserId: string
     declare UserType: string
 
-    declare createdAt: CreationOptional<string | null>
-    declare updatedAt: CreationOptional<string | null>
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
 }
 
 export default function initCredentialModel(

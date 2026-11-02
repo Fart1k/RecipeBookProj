@@ -14,8 +14,8 @@ export class Recipe extends Model<InferAttributes<Recipe>, InferCreationAttribut
     declare ImageUrl: CreationOptional<string | null>
     declare RatingOverall: CreationOptional<number | null>
 
-    declare createdAt: CreationOptional<string | null>
-    declare updatedAt: CreationOptional<string | null>
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
 }
 
 export default function RecipeModel(

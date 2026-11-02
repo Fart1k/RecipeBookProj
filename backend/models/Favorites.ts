@@ -8,8 +8,8 @@ export class Favorite extends Model<InferAttributes<Favorite>, InferCreationAttr
     declare UserId: string
     declare RecipeId: Json
 
-    declare createdAt: CreationOptional<string | null>
-    declare updatedAt: CreationOptional<string | null>
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
 }
 
 export default function initFavoriteModel(

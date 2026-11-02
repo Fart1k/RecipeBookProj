@@ -7,8 +7,8 @@ export class CommentList extends Model<InferAttributes<CommentList>, InferCreati
     declare id: string
     declare UserId: string
 
-    declare createdAt: CreationOptional<string | null>
-    declare updatedAt: CreationOptional<string | null>
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
 }
 
 export default function initCommentListModel(

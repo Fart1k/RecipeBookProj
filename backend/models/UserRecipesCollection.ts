@@ -11,8 +11,8 @@ export class UserRecipesCollection extends Model<InferAttributes<UserRecipesColl
     
     declare CollectionDescription: CreationOptional<string | null>
 
-    declare createdAt: CreationOptional<string | null>
-    declare updatedAt: CreationOptional<string | null>
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
 }
 
 export default function initUserRecipesCollectionModel(
