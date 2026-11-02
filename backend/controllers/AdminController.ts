@@ -1,8 +1,8 @@
-import { Request, Response } from "express"
+import * as express from "express"
 import { db } from "../db.ts"
 
 const AdminController = {
-    async getAllRecipes(req: Request, res: Response) {
+    async getAllRecipes(req: express.Request, res: express.Response) {
         try {
             const recipes = await db.recipes.findAll({
                 where: {
@@ -25,7 +25,7 @@ const AdminController = {
         }
     },
 
-    async approveRecipe(req: Request, res: Response) {
+    async approveRecipe(req: express.Request, res: express.Response) {
         try {
             const recipeID: string = req.params.ID as string
             const recipe: any = await db.recipes.findByPk(recipeID)
