@@ -1,9 +1,10 @@
-import { Express } from "express";
-import RecipeController from "../controllers/RecipeController";
-import UserController from "../controllers/UserController";
-import AdminController from "../controllers/AdminController"
+import type express from "express";
+import RecipeController from "../controllers/RecipeController.ts";
+import UserController from "../controllers/UserController.ts";
+import AdminController from "../controllers/AdminController.ts"
+import UserRecipesCollectionController from "../controllers/UserRecipesCollectionsController.ts"
 
-export default (app: Express): void => {
+export default (app: express.Application): void => {
  
   //Recipes routes
   app.route("/recipes")
@@ -28,4 +29,8 @@ export default (app: Express): void => {
   
   app.route("/admin/recipestoapprove/:ID")
     .put(AdminController.approveRecipe)
+
+  //UserRecipesCollection routes
+  app.route("/userrecipescollections/")
+    .post(UserRecipesCollectionController.create)
 };

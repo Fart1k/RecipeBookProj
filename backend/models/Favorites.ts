@@ -1,24 +1,41 @@
-import { Sequelize, DataTypes } from "sequelize";
+import type { UUID } from "node:crypto";
+import { DataTypes, Model, UUIDV4 } from "sequelize"
+import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
+import type { Json } from "sequelize/lib/utils";
 
-export default function FavoriteModel(
-    sequelize: Sequelize,
-    dataTypes: typeof DataTypes
+export class Favorite extends Model<InferAttributes<Favorite>, InferCreationAttributes<Favorite>> {
+    declare id: string
+    declare UserId: string
+    declare RecipeId: Json
+
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
+}
+
+export default function initFavoriteModel(
+    sequelize: Sequelize
 ) {
-    const Favorite = sequelize.define(
-        "Favorite", {
+    Favorite.init(
+        {
             id: {
-                type: dataTypes.UUID,
-                defaultValue: dataTypes.UUIDV4,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
             UserId: {
-                type: dataTypes.UUID,
+                type: DataTypes.UUID,
                 allowNull: false
             },
             RecipeId: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
-            }
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            sequelize,
+            modelName: "Favorite"
         }
     )
     return Favorite

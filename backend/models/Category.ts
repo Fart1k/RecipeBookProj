@@ -1,22 +1,36 @@
-import { Sequelize, DataTypes } from "sequelize"
+import type { UUID } from "node:crypto";
+import { DataTypes, Model, UUIDV4 } from "sequelize"
+import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
+import type { Json } from "sequelize/lib/utils";
 
-export default function CategoryModel (
-    sequelize: Sequelize, 
-    dataTypes: typeof DataTypes
+export class Category extends Model<InferAttributes<Category>, InferCreationAttributes<Category>> {
+    declare id: string
+    declare CategoryName: string
+
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
+}
+export default function initCategoryModel (
+    sequelize: Sequelize
 ) {
-    const Category = sequelize.define(
-        "Category", {
+    Category.init(
+        {
             id: {
-                type: dataTypes.UUID,
-                defaultValue: dataTypes.UUIDV4,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
             CategoryName: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
-            }
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            sequelize,
+            modelName: "Category"
         }
     )
-
     return Category
 }

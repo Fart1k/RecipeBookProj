@@ -1,41 +1,63 @@
+import type { UUID } from "node:crypto";
+import { DataTypes, Model, UUIDV4 } from "sequelize"
+import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
+import type { Json } from "sequelize/lib/utils";
 
-import { Sequelize, DataTypes } from "sequelize"
+export class Recipe extends Model<InferAttributes<Recipe>, InferCreationAttributes<Recipe>> {
+    declare id: string
+    declare RecipeTitle: string
+    declare Instructions: string
+    declare Ingredients: string
+    declare IsVisibleToOther: boolean
+    declare Status: boolean
+
+    declare ImageUrl: CreationOptional<string | null>
+    declare RatingOverall: CreationOptional<number | null>
+
+    declare createdAt: CreationOptional<Date>
+    declare updatedAt: CreationOptional<Date>
+}
 
 export default function RecipeModel(
-    sequelize: Sequelize,
-    dataTypes: typeof DataTypes
+    sequelize: Sequelize
 ) {
-    const Recipe = sequelize.define(
-        "Recipe", {
+    Recipe.init(
+        {
             id: {
-                type: dataTypes.UUID,
-                defaultValue: dataTypes.UUIDV4,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
             RecipeTitle: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
             },
             Instructions: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
             },
             Ingredients: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
             },
             ImageUrl: {
-                type: dataTypes.STRING
+                type: DataTypes.STRING
             },
             IsVisibleToOther: {
-                type: dataTypes.BOOLEAN
+                type: DataTypes.BOOLEAN
             },
             RatingOverall: {
-                type: dataTypes.TINYINT
+                type: DataTypes.TINYINT
             },
             Status: {
-                type: dataTypes.BOOLEAN
-            }
+                type: DataTypes.BOOLEAN
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            sequelize,
+            modelName: "Recipe"
         }
     )
 

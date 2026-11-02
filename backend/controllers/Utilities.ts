@@ -1,9 +1,9 @@
-import {Request} from "express";
+import * as express from "express"
 //installi bycrpt hiljem siia tuleb hassing ka
 import bcrypt from "bcrypt"
 
 const Utilities = {
-    getBaseURL(req: Request) : string {
+    getBaseURL(req: express.Request) : string {
         return `${req.protocol}://${req.get("host")}`
     },
 
