@@ -31,14 +31,14 @@ const connect = async (): Promise<void> => {
         console.log("db connection error", error);
     }
 }
-const _Recipe = RecipeModel(sequelize, DataTypes)
-const _User = UserModel(sequelize, DataTypes)
-const _Category = CategoryModel(sequelize, DataTypes)
-const _Credentials = CredentialsModel(sequelize, DataTypes)
-const _Favorite = FavoriteModel(sequelize, DataTypes)
-const _CommentList = CommentListModel(sequelize, DataTypes)
-const _Comment = CommentModel(sequelize, DataTypes)
-const _UserRecipesCollections = UserRecipesCollectionModel(sequelize, DataTypes)
+const _Recipe = RecipeModel(sequelize)
+const _User = UserModel(sequelize)
+const _Category = CategoryModel(sequelize)
+const _Credentials = CredentialsModel(sequelize)
+const _Favorite = FavoriteModel(sequelize)
+const _CommentList = CommentListModel(sequelize)
+const _Comment = CommentModel(sequelize)
+const _UserRecipesCollections = UserRecipesCollectionModel(sequelize)
 
 _User.hasMany(_UserRecipesCollections, {foreignKey: "UserId" as "User"})
 _UserRecipesCollections.belongsTo(_User, {foreignKey: "UserId" as "RecipeId"})
