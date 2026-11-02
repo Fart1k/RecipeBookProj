@@ -1,36 +1,56 @@
-import { Sequelize, DataTypes } from "sequelize"
+import type { UUID } from "node:crypto";
+import { DataTypes, Model, UUIDV4 } from "sequelize"
+import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
+import type { Json } from "sequelize/lib/utils";
 
-export default function CommentModel(
-    sequelize: Sequelize,
-    dataTypes: typeof DataTypes
+export class Comment extends Model<InferAttributes<Comment>, InferCreationAttributes<Comment>> {
+    declare id: string
+    declare CommentBody: string
+    declare Author: string
+    declare RecipeId: Json
+    declare CommentListId: Json
+
+    declare Rating: CreationOptional<number | null>
+    declare createdAt: CreationOptional<string | null>
+    declare updatedAt: CreationOptional<string | null>
+}
+
+export default function initCommentModel(
+    sequelize: Sequelize
 ) {
-    const Comment = sequelize.define(
-        "Comment", {
+    Comment.init(
+        {
             id: {
-                type: dataTypes.UUID,
-                defaultValue: dataTypes.UUIDV4,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
             CommentBody: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
             },
             Rating: {
-                type: dataTypes.TINYINT,
+                type: DataTypes.TINYINT,
                 allowNull: true
             },
             Author: {
-                type: dataTypes.UUID,
+                type: DataTypes.UUID,
                 allowNull: false
             },
             RecipeId: {
-                type: dataTypes.UUID,
+                type: DataTypes.JSON,
                 allowNull: false
             },
             CommentListId: {
-                type: dataTypes.UUID,
+                type: DataTypes.JSON,
                 allowNull: false
-            }
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            sequelize,
+            modelName: "Comments"
         }
     )
     return Comment

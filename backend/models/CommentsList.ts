@@ -1,20 +1,36 @@
-import { Sequelize, DataTypes } from "sequelize"
+import type { UUID } from "node:crypto";
+import { DataTypes, Model, UUIDV4 } from "sequelize"
+import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
+import type { Json } from "sequelize/lib/utils";
 
-export default function CommentListModel(
-    sequelize: Sequelize,
-    dataTypes: typeof DataTypes
+export class CommentList extends Model<InferAttributes<CommentList>, InferCreationAttributes<CommentList>> {
+    declare id: string
+    declare UserId: string
+
+    declare createdAt: CreationOptional<string | null>
+    declare updatedAt: CreationOptional<string | null>
+}
+
+export default function initCommentListModel(
+    sequelize: Sequelize
 ) {
-    const CommentList = sequelize.define(
-        "CommentList",{
+    CommentList.init(
+        {
             id: {
-                type: dataTypes.UUID,
-                defaultValue: dataTypes.UUIDV4,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
             UserId: {
-                type: dataTypes.UUID,
+                type: DataTypes.UUID,
                 allowNull: false
-            }
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            sequelize,
+            modelName: "CommentsList"
         }
     )
     return CommentList

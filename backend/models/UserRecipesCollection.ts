@@ -1,35 +1,54 @@
-import { Sequelize, DataTypes } from "sequelize";
+import type { UUID } from "node:crypto";
+import { DataTypes, Model, UUIDV4 } from "sequelize"
+import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
+import type { Json } from "sequelize/lib/utils";
 
-export default function UserRecipesCollectionModel(
-    sequelize: Sequelize,
-    dataTypes: typeof DataTypes
+export class UserRecipesCollection extends Model<InferAttributes<UserRecipesCollection>, InferCreationAttributes<UserRecipesCollection>> {
+    declare CollectionName: string
+    declare RecipeIds: Json
+    declare UserId: string
+    declare id: string
+    
+    declare CollectionDescription: CreationOptional<string | null>
+
+    declare createdAt: CreationOptional<string | null>
+    declare updatedAt: CreationOptional<string | null>
+}
+
+export default function initUserRecipesCollectionModel(
+    sequelize: Sequelize
 ) {
-    const UserRecipesCollection = sequelize.define(
-        "UserRecipesCollection", {
+    UserRecipesCollection.init(
+        {
             id: {
-                type: dataTypes.UUID,
-                defaultValue: dataTypes.UUIDV4,
+                type: DataTypes.UUID,
+                defaultValue: UUIDV4,
                 primaryKey: true
             },
             CollectionName: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
             },
             CollectionDescription: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
             },
             // Foreign keys
-            RecipeId: {
-                type: dataTypes.ARRAY(dataTypes.UUID),
+            RecipeIds: {
+                type: DataTypes.JSON,
                 allowNull: false
             },
             UserId: {
-                type: dataTypes.UUID,
+                type: DataTypes.UUID,
                 allowNull: false
-            }
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            sequelize,
+            modelName: "UserRecipesCollection"
         }
     )
-    console.log(UserRecipesCollection === sequelize.models.UserRecipesCollection)
     return UserRecipesCollection
 }

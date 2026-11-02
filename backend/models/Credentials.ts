@@ -1,25 +1,42 @@
-import { Sequelize, DataTypes } from "sequelize"
+import type { UUID } from "node:crypto";
+import { DataTypes, Model, UUIDV4 } from "sequelize"
+import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
+import type { Json } from "sequelize/lib/utils";
 
-export default function CredentialsModel(
-    sequelize: Sequelize,
-    dataTypes: typeof DataTypes
+export class Credential extends Model<InferAttributes<Credential>, InferCreationAttributes<Credential>> {
+    declare id: string
+    declare UserId: string
+    declare UserType: string
+
+    declare createdAt: CreationOptional<string | null>
+    declare updatedAt: CreationOptional<string | null>
+}
+
+export default function initCredentialModel(
+    sequelize: Sequelize
 ) {
-    const Credential = sequelize.define(
-        "Credential", {
+    Credential.init(
+        {
             id: {
-                type: dataTypes.UUID,
-                defaultValue: dataTypes.UUIDV4,
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
             UserId: {
-                type: dataTypes.UUID,
+                type: DataTypes.UUID,
                 allowNull: false
             },
             //List<Credentials>
             UserType: {
-                type: dataTypes.STRING,
+                type: DataTypes.STRING,
                 allowNull: false
-            }
+            },
+            createdAt: DataTypes.DATE,
+            updatedAt: DataTypes.DATE,
+        },
+        {
+            sequelize,
+            modelName: "Credentials"
         }
     )
     return Credential
