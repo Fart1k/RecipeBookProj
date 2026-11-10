@@ -1,11 +1,11 @@
-import { Request, Response } from "express";
+import * as express from "express";
 import { db } from "../db.ts";
 import { v7 as uuidv7 } from "uuid";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const UserController = {
-    async create(req: Request, res: Response) {
+    async create(req: express.Request, res: express.Response) {
         if (
             !req.body.Username ||
             !req.body.Email ||
@@ -55,7 +55,7 @@ const UserController = {
         }
     },
 
-    async login(req: Request, res: Response) {
+    async login(req: express.Request, res: express.Response) {
         if (!req.body.Email || !req.body.Password) {
             return res.status(400).send({
                 error: "Email and password are required"

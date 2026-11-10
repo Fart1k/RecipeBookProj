@@ -1,17 +1,16 @@
-import { Request, Response } from "express";
+import * as express from "express"
 import { db } from "../db.ts";
 import Utilities from "./Utilities.ts";
 import { v7 as uuidv7 } from "uuid";
 import { error } from "node:console"
 
 const RecipeController = {
-    async create(req: Request, res: Response) {
+    async create(req: express.Request, res: express.Response) {
         if (
             !req.body.RecipeTitle ||
             !req.body.Instructions ||
             !req.body.Ingredients ||
-            !req.body.ImageUrl ||
-            !req.body.RatingOverall
+            req.body.IsVisibleToOther
         ) {
             return res.status(400).send({
                 error: "Missing parameters, please review data"
@@ -21,10 +20,10 @@ const RecipeController = {
         const newRecipe = {
             id: uuidv7(),
             RecipeTitle: req.body.RecipeTitle,
-            Instruction: req.body.Instructions,
+            Instructions: req.body.Instructions,
             Ingredients: req.body.Ingredients,
-            ImageURL: req.body.ImageUrl,
-            RatingOverall: req.body.RatingOverall
+            IsVisibleToOther: req.body.IsVisibleToOther,
+            Status: false
         };
 
         const createdRecipe = await db.recipes.create(newRecipe);
@@ -32,7 +31,7 @@ const RecipeController = {
         return res.status(201).json(createdRecipe);
     },
 
-    async getAll(req: Request, res: Response) {
+    async getAll(req: express.Request, res: express.Response) {
         const recipes = await db.recipes.findAll({
             where: {
                 Status: true
@@ -43,7 +42,7 @@ const RecipeController = {
         .status(200)
         .send(recipes.map(({ id, RecipeTitle }: any) => ({ id, RecipeTitle })))
     },
-    async getByID(req: Request, res: Response) {
+    async getByID(req: express.Request, res: express.Response) {
         const recipeID: string = req.params.ID as string;
         console.log(recipeID);
         const recipe = await db.recipes.findByPk(recipeID);
@@ -55,36 +54,33 @@ const RecipeController = {
         }
         return res.status(200).send(recipe);
     },
-    async modifyById(req: Request, res:Response){
-        const recipeToBeModified = await this.getByID(req,res)
-        if (!recipeToBeModified){
+    async modifyById(req: express.Request, res: express.Response){
+        if (!req.params.id){
+            return res.status(400).send({"error":"No ID supplied"})
+        }
+        
+        const recipeToBeModified = await this.getRecipe(req,res)
+
+        if (!recipeToBeModified) {
             return
         }
-        if (
-            !req.body.RecipeTitle ||
-            !req.body.Instructions ||
-            !req.body.Ingredients ||
-            !req.body.ImageUrl ||
-            !req.body.RatingOverall
-        ) {
-            return res.status(400).send({
-                error: "Missing parameters, please review data"
-            });
+
+        const modifiedRecipe = {
+            RecipeTitle: req.body.RecipeTitle,
+            Instructions: req.body.Instructions,
+            Ingredients: req.body.Ingredients,
+            IsVisibleToOther: req.body.IsVisibleToOther,
+            ImageUrl: req.body.ImageUrl || null
         }
-        recipeToBeModified.RecipeTitle = req.body.RecipeTitle;
-        recipeToBeModified.Instruction = req.body.Instructions;
-        recipeToBeModified.Ingredients = req.body.Ingredients;
-        recipeToBeModified.ImageURL = req.body.ImageUrl;
-        recipeToBeModified.RatingOverall = req.body.RatingOverall;
 
-        await recipeToBeModified.save();
+        await db.recipes.update(modifiedRecipe, { where: {id: req.params.id} })
 
-        return res.location(`${Utilities.getBaseURL(req)}/games/${recipeToBeModified.id}`)
-        .status(201)
-        .send(recipeToBeModified)
+        return res.location(`${Utilities.getBaseURL(req)}/recipes/${recipeToBeModified.id}`)
+        .status(200)
+        .send(modifiedRecipe)
     },
   
-    async deleteById(req: Request, res: Response) {
+    async deleteById(req: express.Request, res: express.Response) {
         const recipeToBeDeleted: any = await this.getByID(req, res);
         if (!recipeToBeDeleted) {
             return;
@@ -92,6 +88,17 @@ const RecipeController = {
 
         await recipeToBeDeleted.destroy();
         return res.status(204).send({ error: "No content." });
+    },
+
+    async getRecipe(req: express.Request, res: express.Response) {
+        let recipeID: string = req.params.id as string
+
+        const recipe = await db.recipes.findByPk(recipeID)
+        if(!recipe) {
+            res.status(404).send({error: `Recipe with this ID is not found. ${recipeID}`})
+            return null
+        }
+        return recipe
     }
     
 }

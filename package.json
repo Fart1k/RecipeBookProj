@@ -1,6 +1,7 @@
 {
   "name": "recipebookproj",
   "version": "1.0.0",
+  "type": "module",
   "description": "https://drive.google.com/file/d/1mN-_TCDRX_lyytXufgs3sGhUfKOwtxFV/view?usp=sharing",
   "main": "index.js",
   "scripts": {
