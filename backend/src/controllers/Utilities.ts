@@ -1,5 +1,4 @@
 import * as express from "express"
-//installi bycrpt hiljem siia tuleb hassing ka
 import bcrypt from "bcrypt"
 
 const Utilities = {

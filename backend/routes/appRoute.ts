@@ -1,8 +1,8 @@
 import type express from "express";
-import RecipeController from "../controllers/RecipeController.ts";
-import UserController from "../controllers/UserController.ts";
-import AdminController from "../controllers/AdminController.ts"
-import UserRecipesCollectionController from "../controllers/UserRecipesCollectionsController.ts"
+import RecipeController from "../src/controllers/RecipeController.ts";
+import UserController from "../src/controllers/UserController.ts";
+import AdminController from "../src/controllers/AdminController.ts"
+import UserRecipesCollectionController from "../src/controllers/UserRecipesCollectionsController.ts"
 
 export default (app: express.Application): void => {
  

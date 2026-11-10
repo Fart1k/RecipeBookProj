@@ -1,5 +1,5 @@
 import * as express from "express"
-import { db } from "../src/db.ts"
+import { db } from "../db.ts"
 
 const AdminController = {
     async getAllRecipes(req: express.Request, res: express.Response) {
