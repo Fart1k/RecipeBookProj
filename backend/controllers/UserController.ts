@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { db } from "../db.ts";
+import { db } from "../src/db.ts";
 import { v7 as uuidv7 } from "uuid";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

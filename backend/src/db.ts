@@ -40,8 +40,8 @@ const _CommentList = CommentListModel(sequelize)
 const _Comment = CommentModel(sequelize)
 const _UserRecipesCollections = UserRecipesCollectionModel(sequelize)
 
-_User.hasMany(_UserRecipesCollections, {foreignKey: "UserId" as "User"})
-_UserRecipesCollections.belongsTo(_User, {foreignKey: "UserId" as "RecipeId"})
+_User.hasMany(_UserRecipesCollections, {foreignKey: "UserId", as: "UserRecipesCollections"})
+_UserRecipesCollections.belongsTo(_User, {foreignKey: "UserId", as: "User"})
 
 const db = {
     Sequelize,

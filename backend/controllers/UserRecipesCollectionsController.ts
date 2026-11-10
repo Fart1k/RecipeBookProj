@@ -1,5 +1,5 @@
 import * as express from "express"
-import { db } from "../db.ts"
+import { db } from "../src/db.ts"
 import Utilities from "./Utilities.ts"
 import { v7 as uuidv7 } from "uuid"
 
@@ -25,7 +25,19 @@ const UserRecipesCollectionsController = {
 
         const addedUserRecipeCollection = await db.userRecipesCollection.create(newUserRecipeCollection)
 
-        return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${addedUserRecipeCollection.id}`).status(201).json(addedUserRecipeCollection)
+        const collectionWithUser = await db.userRecipesCollection.findByPk(
+            addedUserRecipeCollection.id, 
+            {
+                include: [
+                    {
+                        model: db.users,
+                        as: "User"
+                    }
+                ]
+            }
+        )
+
+        return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${addedUserRecipeCollection.id}`).status(201).json(collectionWithUser)
     }
 }
 export default UserRecipesCollectionsController
