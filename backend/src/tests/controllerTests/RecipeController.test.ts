@@ -143,6 +143,27 @@ describe("RecipeController", () => {
         expect(res.send).toHaveBeenCalledWith(modifiedRecipe);
     })
 
+    test("Modify_RecipeWithoutId_With400Status", async () => {
+        const req = {
+            params: {}
+        } as unknown as Request;
+    
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
+    
+        await _RecipeController.modifyById(req, res);
+    
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith({
+            error: "No ID supplied"
+        });
+    
+        expect(mocks.findByPk).not.toHaveBeenCalled();
+        expect(mocks.update).not.toHaveBeenCalled();
+    });
+
     test("Create_Recipe_With201Status", async () => {
         const recipeData = {
             RecipeTitle: "New recipe",
