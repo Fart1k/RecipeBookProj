@@ -61,6 +61,15 @@ const UserRecipesCollectionsController = {
             return res.status(400).send({error: "No ID supplied"})
         }
 
+        if (typeof req.body.CollectionName !== "string" ||
+            !req.body.CollectionName.trim() ||
+            !Array.isArray(req.body.RecipeIds) ||
+            !req.body.RecipeIds.every((id: unknown) => typeof id === "string" && id.length > 0) ||
+            typeof req.body.CollectionDescription !== "string" 
+        ) {
+            return res.status(400).send({error: "Incorrect or missing data"})
+        }
+
         const collectionToBeModified = await UserRecipesCollectionsController.getCollection(req, res)
 
         if (!collectionToBeModified) {return}
@@ -72,7 +81,7 @@ const UserRecipesCollectionsController = {
             updatedAt: new Date()
         }
 
-        await db.userRecipesCollection.update(modifiedCollection, {where : {id: req.params.ID}})
+        await db.userRecipesCollection.update(modifiedCollection, {where : {id: collectionToBeModified.id}})
 
         return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${collectionToBeModified.id}`)
             .status(201)
