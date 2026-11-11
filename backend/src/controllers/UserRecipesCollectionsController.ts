@@ -42,6 +42,18 @@ const UserRecipesCollectionsController = {
         const collections = await db.userRecipesCollection.findAll()
 
         return res.status(200).send(collections.map(({ id, CollectionName }: any) => ({ id, CollectionName})))
+    },
+
+    async getById(req: express.Request, res: express.Response) {
+        const collectionId: string = req.params.ID as string
+
+        const collection = await db.userRecipesCollection.findByPk(collectionId)
+        if (!collection) {
+            res.status(404).send({error: `Recipe Collection with this ID is not found: ${collectionId}`})
+            return null
+        }
+
+        return res.status(200).send(collection)
     }
 }
 export default UserRecipesCollectionsController
