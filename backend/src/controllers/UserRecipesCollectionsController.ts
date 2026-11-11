@@ -88,6 +88,14 @@ const UserRecipesCollectionsController = {
             .send(modifiedCollection)
     },
 
+    async deleteById(req: express.Request, res: express.Response) {
+        const collectionToBeDeleted: any = await UserRecipesCollectionsController.getCollection(req, res)
+        if (!collectionToBeDeleted) {return}
+
+        await collectionToBeDeleted.destroy()
+        return res.status(204).send({error: "No content. "})
+    },
+
     async getCollection(req: express.Request, res: express.Response) {
         let collectionId: string = req.params.ID as string
 
