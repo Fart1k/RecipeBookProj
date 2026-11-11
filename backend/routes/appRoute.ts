@@ -34,4 +34,7 @@ export default (app: express.Application): void => {
   app.route("/userrecipescollections/")
     .post(UserRecipesCollectionController.create)
     .get(UserRecipesCollectionController.getAll)
+  
+  app.route("/userrecipescollections/:ID")
+    .get(UserRecipesCollectionController.getById)
 };
