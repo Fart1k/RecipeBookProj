@@ -37,4 +37,5 @@ export default (app: express.Application): void => {
   
   app.route("/userrecipescollections/:ID")
     .get(UserRecipesCollectionController.getById)
+    .put(UserRecipesCollectionController.modifyById)
 };

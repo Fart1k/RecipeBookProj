@@ -54,6 +54,49 @@ const UserRecipesCollectionsController = {
         }
 
         return res.status(200).send(collection)
+    },
+
+    async modifyById(req: express.Request, res: express.Response) {
+        if (!req.params.ID) {
+            return res.status(400).send({error: "No ID supplied"})
+        }
+
+        if (typeof req.body.CollectionName !== "string" ||
+            !req.body.CollectionName.trim() ||
+            !Array.isArray(req.body.RecipeIds) ||
+            !req.body.RecipeIds.every((id: unknown) => typeof id === "string" && id.length > 0) ||
+            typeof req.body.CollectionDescription !== "string" 
+        ) {
+            return res.status(400).send({error: "Incorrect or missing data"})
+        }
+
+        const collectionToBeModified = await UserRecipesCollectionsController.getCollection(req, res)
+
+        if (!collectionToBeModified) {return}
+
+        const modifiedCollection = {
+            CollectionName: req.body.CollectionName,
+            RecipeIds: req.body.RecipeIds,
+            CollectionDescription: req.body.CollectionDescription,
+            updatedAt: new Date()
+        }
+
+        await db.userRecipesCollection.update(modifiedCollection, {where : {id: collectionToBeModified.id}})
+
+        return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${collectionToBeModified.id}`)
+            .status(201)
+            .send(modifiedCollection)
+    },
+
+    async getCollection(req: express.Request, res: express.Response) {
+        let collectionId: string = req.params.ID as string
+
+        const collection = await db.userRecipesCollection.findByPk(collectionId)
+        if (!collection) {
+            res.status(404).send({error: `Recipe with this ID is not found. ${collectionId}`})
+            return null
+        }
+        return collection
     }
 }
 export default UserRecipesCollectionsController
