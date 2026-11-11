@@ -13,7 +13,8 @@ const mocks = vi.hoisted(() => ({
     findAll: vi.fn(),
     findByPk: vi.fn(),
     update: vi.fn(),
-    create: vi.fn()
+    create: vi.fn(),
+    destroy: vi.fn()
 }))
 
 vi.mock("../../db.ts", () => ({
@@ -22,7 +23,8 @@ vi.mock("../../db.ts", () => ({
             findAll: mocks.findAll,
             findByPk: mocks.findByPk,
             update: mocks.update,
-            create: mocks.create
+            create: mocks.create,
+            destroy: mocks.destroy
         }
     }
 }))
@@ -101,30 +103,17 @@ describe("RecipeController", () => {
     })
 
     test("Modify_Recipe_With200Status", async () => {
-        const recipe = {
-            id: "58fe1398-dcd8-11f1-8dc2-901b0eec5991",
-            RecipeTitle: "recipe1",
-            Instructions: "1. blabla",
-            Ingredients: "yoyoyo",
-            ImageUrl: null,
-            Status: true,
-            RatingOverall: 2,
-            IsVisibleToOther: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        }
-
         const existingRecipe = {
-            id: recipe.id,
-            RecipeTitle: recipe.RecipeTitle
+            id: "58fe1398-dcd8-11f1-8dc2-901b0eec5991",
+            RecipeTitle: "recipe1"
         }
 
         const modifiedRecipe = {
             RecipeTitle: "New recipe title",
             Instructions: "New insructions",
             Ingredients: "New ingredients",
-            IsVisibleToOther: recipe.IsVisibleToOther,
-            ImageUrl: recipe.ImageUrl
+            IsVisibleToOther: true,
+            ImageUrl: null
         }
 
         mocks.findByPk.mockResolvedValue(existingRecipe)
@@ -132,7 +121,7 @@ describe("RecipeController", () => {
 
         const req = {
             params: {
-                id: recipe.id
+                id: existingRecipe.id
             },
             body: modifiedRecipe,
             protocol: "http",
@@ -147,9 +136,9 @@ describe("RecipeController", () => {
 
         await _RecipeController.modifyById(req, res)
 
-        expect(mocks.findByPk).toHaveBeenCalledWith(recipe.id);
+        expect(mocks.findByPk).toHaveBeenCalledWith(existingRecipe.id);
 
-        expect(mocks.update).toHaveBeenCalledExactlyOnceWith(modifiedRecipe, {where: {id: recipe.id}})
+        expect(mocks.update).toHaveBeenCalledExactlyOnceWith(modifiedRecipe, {where: {id: existingRecipe.id}})
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.send).toHaveBeenCalledWith(modifiedRecipe);
     })
@@ -212,5 +201,58 @@ describe("RecipeController", () => {
         });
 
         expect(mocks.create).not.toHaveBeenCalled();
+    })
+
+    test("Delete_Recipe_With204Status", async () => {
+        const recipeToBeDeleted = {
+            id: "58fe1398-dcd8-11f1-8dc2-901b0eec5991",
+            RecipeTitle: "Recipe to be deleted",
+            destroy: vi.fn().mockResolvedValue(undefined)
+        }
+
+        mocks.findByPk.mockResolvedValue(recipeToBeDeleted)
+
+        const req = {
+            params: {
+                id: recipeToBeDeleted.id,
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _RecipeController.deleteById(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledExactlyOnceWith(recipeToBeDeleted.id)
+        expect(recipeToBeDeleted.destroy).toHaveBeenCalledOnce()
+
+        expect(res.status).toHaveBeenCalledWith(204)
+        expect(res.send).toHaveBeenCalledWith({ error: "No content." })
+
+    })
+
+    test("Delete_RecipeNotFound", async () => {
+        const recipeId = "58fe1398-dcd8-11f1-8dc2-901b0eec5991"
+
+        mocks.findByPk.mockResolvedValue(null)
+
+        const req = {
+            params: {
+                id: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _RecipeController.deleteById(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(res.status).toHaveBeenCalledWith(404)
+        expect(res.send).toHaveBeenCalledWith({ error: `Recipe with this ID is not found. ${recipeId}` })
     })
 })
