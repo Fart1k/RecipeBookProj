@@ -11,8 +11,6 @@ const UserRecipesCollectionsController = {
             return res.status(400).send({ error: "Missing parameters. Please review data"})
         }
 
-
-
         const newUserRecipeCollection = {
             id: uuidv7(),
             CollectionName: req.body.CollectionName,
@@ -38,6 +36,12 @@ const UserRecipesCollectionsController = {
         )
 
         return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${addedUserRecipeCollection.id}`).status(201).json(collectionWithUser)
+    },
+
+    async getAll(req: express.Request, res: express.Response) {
+        const collections = await db.userRecipesCollection.findAll()
+
+        return res.status(200).send(collections.map(({ id, CollectionName }: any) => ({ id, CollectionName})))
     }
 }
 export default UserRecipesCollectionsController
