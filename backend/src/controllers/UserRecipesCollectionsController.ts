@@ -54,6 +54,29 @@ const UserRecipesCollectionsController = {
         }
 
         return res.status(200).send(collection)
+    },
+
+    async modifyById(req: express.Request, res: express.Response) {
+        if (!req.params.id) {
+            return res.status(400).send({error: "No ID supplied"})
+        }
+
+        const collectionToBeModified = await this.getCollection(req, res)
+
+        if (!collectionToBeModified) {return}
+
+        const modifiedCollection = {
+            CollectionName: req.body.CollectionName,
+            RecipeIds: req.body.RecipeIds,
+            CollectionDescription: req.body.CollectionDescription,
+            updatedAt: Date.now()
+        }
+
+        await db.userRecipesCollection.update(modifiedCollection, {where : {id: req.params.id}})
+
+        return res.location(`${Utilities.getBaseURL(req)}/userrecipescollection/${collectionToBeModified.id}}`)
+            .status(200)
+            .send(modifiedCollection)
     }
 }
 export default UserRecipesCollectionsController
