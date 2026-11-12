@@ -28,7 +28,13 @@ Produktsiooni käivitamine
 3 Käivita toodangu kood käsuga: npm run start
 
 
-SWAGGER
+# Apitomy OpenAPI Editor
 
+parem klõps oma repo peale
+vali "ava terminal" 
 
-npm run test-app:dev
+1 git clone https://github.com/Apitomy/apitomy-openapi-editor.git
+2 cd apitomy-openapi-editor
+3 cmd
+4 npm run test-app:install
+5 npm run test-app:dev
