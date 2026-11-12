@@ -26,3 +26,9 @@ Produktsiooni käivitamine
 1 backend kaustas
 2 Konstrueeri produktsiooni kood käsuga: npm run build
 3 Käivita toodangu kood käsuga: npm run start
+
+
+SWAGGER
+
+
+npm run test-app:dev
