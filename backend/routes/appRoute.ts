@@ -4,11 +4,11 @@ import UserController from "../src/controllers/UserController.ts";
 import AdminController from "../src/controllers/AdminController.ts"
 import UserRecipesCollectionController from "../src/controllers/UserRecipesCollectionsController.ts"
 import CommentController from "../src/controllers/CommentController.ts";
-import { authenticateToken } from "../src/middleware/auth.ts";
+import { authenticateToken, isAdmin } from "../src/middleware/auth.ts";
 
 export default (app: express.Application): void => {
- 
-  //Recipes routes
+ //Recipes routes
+
   app.route("/recipes")
     .get(RecipeController.getAll)
     .post(RecipeController.create);
@@ -18,21 +18,16 @@ export default (app: express.Application): void => {
     .put(RecipeController.modifyById)
     .delete(RecipeController.deleteById);
 
-  //Users routes
+//Users Routes
+
   app.route("/users/register")
     .post(UserController.create);
 
   app.route("/users/login")
     .post(UserController.login);
 
-  //Admin routes
-  app.route("/admin/recipestoapprove")
-    .get(AdminController.getAllRecipes);
-  
-  app.route("/admin/recipestoapprove/:ID")
-    .put(AdminController.approveRecipe)
-
   //UserRecipesCollection routes
+
   app.route("/userrecipescollections/")
     .post(UserRecipesCollectionController.create)
     .get(UserRecipesCollectionController.getAll)
@@ -42,11 +37,16 @@ export default (app: express.Application): void => {
     .put(UserRecipesCollectionController.modifyById)
     .delete(UserRecipesCollectionController.deleteById)
 
+
   app.route("/recipes/:ID/comments")
-  .get(CommentController.getByRecipe)
-  .post(authenticateToken, CommentController.create);
+    .get(CommentController.getByRecipe)
+    .post(authenticateToken, CommentController.create);
+ 
+    //Admin routes
 
-    
-
-    
+  app.route("/admin/recipestoapprove")
+    .get(authenticateToken, isAdmin, AdminController.getAllRecipes);
+  
+  app.route("/admin/recipestoapprove/:ID")
+    .put(authenticateToken, isAdmin, AdminController.approveRecipe);
 };
