@@ -39,4 +39,6 @@ export default (app: express.Application): void => {
     .get(UserRecipesCollectionController.getById)
     .put(UserRecipesCollectionController.modifyById)
     .delete(UserRecipesCollectionController.deleteById)
+
+    
 };
