@@ -3,6 +3,8 @@ import RecipeController from "../src/controllers/RecipeController.ts";
 import UserController from "../src/controllers/UserController.ts";
 import AdminController from "../src/controllers/AdminController.ts"
 import UserRecipesCollectionController from "../src/controllers/UserRecipesCollectionsController.ts"
+import CommentController from "../src/controllers/CommentController.ts";
+import { authenticateToken } from "../src/middleware/auth.ts";
 
 export default (app: express.Application): void => {
  
@@ -39,6 +41,12 @@ export default (app: express.Application): void => {
     .get(UserRecipesCollectionController.getById)
     .put(UserRecipesCollectionController.modifyById)
     .delete(UserRecipesCollectionController.deleteById)
+
+  app.route("/recipes/:ID/comments")
+  .get(CommentController.getByRecipe)
+  .post(authenticateToken, CommentController.create);
+
+    
 
     
 };
