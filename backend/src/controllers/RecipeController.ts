@@ -3,6 +3,7 @@ import { db } from "../db.ts";
 import Utilities from "./Utilities.ts";
 import { v7 as uuidv7 } from "uuid";
 import { error } from "node:console"
+import { Op } from "sequelize";
 
 const RecipeController = {
     async create(req: express.Request, res: express.Response) {
@@ -31,16 +32,26 @@ const RecipeController = {
         return res.status(201).json(createdRecipe);
     },
 
-    async getAll(req: express.Request, res: express.Response) {
+   async getAll(req: express.Request, res: express.Response) {
+        const { search, category } = req.query;
+        const whereClause: any = {
+            Status: true
+        };
+        if (search) {
+            whereClause.RecipeTitle = {
+                [Op.iLike]: `%${search}%`
+            };
+        }
+        if (category) {   
+            whereClause.Category = category;
+        }
         const recipes = await db.recipes.findAll({
-            where: {
-                Status: true
-            }
+            where: whereClause
         });
-        console.log("getAll", recipes);
+        console.log("getAll with filters", recipes);
         return res
-        .status(200)
-        .send(recipes.map(({ id, RecipeTitle }: any) => ({ id, RecipeTitle })))
+            .status(200)
+            .json(recipes.map(({ id, RecipeTitle }: any) => ({ id, RecipeTitle })));
     },
     async getByID(req: express.Request, res: express.Response) {
         const recipeID: string = req.params.ID as string;
