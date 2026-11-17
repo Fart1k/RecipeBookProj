@@ -66,11 +66,11 @@ const RecipeController = {
         return res.status(200).send(recipe);
     },
     async modifyById(req: express.Request, res: express.Response){
-        if (!req.params.id){
+        if (!req.params.ID){
             return res.status(400).send({"error":"No ID supplied"})
         }
         
-        const recipeToBeModified = await this.getRecipe(req,res)
+        const recipeToBeModified = await RecipeController.getRecipe(req, res)
 
         if (!recipeToBeModified) {
             return
@@ -84,7 +84,7 @@ const RecipeController = {
             ImageUrl: req.body.ImageUrl || null
         }
 
-        await db.recipes.update(modifiedRecipe, { where: {id: req.params.id} })
+        await db.recipes.update(modifiedRecipe, { where: {id: req.params.ID} })
 
         return res.location(`${Utilities.getBaseURL(req)}/recipes/${recipeToBeModified.id}`)
         .status(200)
@@ -102,7 +102,7 @@ const RecipeController = {
     },
 
     async getRecipe(req: express.Request, res: express.Response) {
-        let recipeID: string = req.params.id as string
+        let recipeID: string = req.params.ID as string
 
         const recipe = await db.recipes.findByPk(recipeID)
         if(!recipe) {
