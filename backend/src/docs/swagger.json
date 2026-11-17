@@ -5,9 +5,32 @@
         "version": "1.0.0",
         "description": "API for Recipe Book application"
     },
+    "tags": [
+        {
+            "name": "Recipes",
+            "description": "Everything about recipes"
+        },
+        {
+            "name": "Users",
+            "description": "User management and authentication"
+        },
+        {
+            "name": "UserRecipesCollections",
+            "description": "User recipe collection management"
+        },
+        {
+            "name": "Comments",
+            "description": "Recipe comments and ratings"
+        },
+        {
+            "name": "Admin",
+            "description": "Administration and moderation"
+        }
+    ],
     "paths": {
         "/recipes": {
             "get": {
+                "tags": ["Recipes"],
                 "summary": "Get all recipes",
                 "responses": {
                     "200": {
@@ -35,6 +58,7 @@
                 }
             },
             "post": {
+                "tags": ["Recipes"],
                 "summary": "Create new recipe",
                 "description": "Creates a new recipe and submits it for admin approval",
                 "requestBody": {
@@ -137,6 +161,7 @@
         },
         "/recipes/{ID}": {
             "get": {
+                "tags": ["Recipes"],
                 "summary": "Get one recipe",
                 "parameters": [
                     {
@@ -228,6 +253,7 @@
                 }
             },
             "put": {
+                "tags": ["Recipes"],
                 "summary": "Modify an existing recipe data",
                 "description": "Updates an existing recipe bt its ID",
                 "parameters": [
@@ -353,6 +379,7 @@
                 }
             },
             "delete": {
+                "tags": ["Recipes"],
                 "summary": "Delete a recipe",
                 "description": "Deletes an existing recipe by ID",
                 "parameters": [
