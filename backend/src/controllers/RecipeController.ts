@@ -92,7 +92,7 @@ const RecipeController = {
     },
   
     async deleteById(req: express.Request, res: express.Response) {
-        const recipeToBeDeleted: any = await this.getByID(req, res);
+        const recipeToBeDeleted: any = await RecipeController.getRecipe(req, res);
         if (!recipeToBeDeleted) {
             return;
         }
