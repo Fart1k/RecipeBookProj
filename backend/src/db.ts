@@ -43,6 +43,9 @@ const _UserRecipesCollections = UserRecipesCollectionModel(sequelize)
 _User.hasMany(_UserRecipesCollections, {foreignKey: "UserId", as: "UserRecipesCollections"})
 _UserRecipesCollections.belongsTo(_User, {foreignKey: "UserId", as: "User"})
 
+//Assotiation for users - credential N:1
+_Credentials.hasMany(_User, {foreignKey: "CredentialId"})
+_User.belongsTo(_Credentials, {foreignKey: "CredentialId"})
 const db = {
     Sequelize,
     sequelize,

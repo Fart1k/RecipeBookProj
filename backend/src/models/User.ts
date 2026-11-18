@@ -8,7 +8,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare PasswordHash: string
     declare UserStatus: string
     declare EmailAddress: string
-    declare CredentialId: Json
+    declare CredentialId: string
 
     declare UserRecipesCollectionId: CreationOptional<Json | null>
     declare CommentsListId: CreationOptional<Json | null>
@@ -29,7 +29,7 @@ export default function UserModel(
         UserRecipesCollectionId: {type: DataTypes.JSON, allowNull: true},
         CommentsListId: {type: DataTypes.JSON, allowNull: true},
         EmailAddress: {type: DataTypes.STRING, allowNull: false},
-        CredentialId: {type: DataTypes.JSON},
+        CredentialId: {type: DataTypes.UUID, allowNull: false},
         createdAt: DataTypes.DATE,
         updatedAt: DataTypes.DATE,
         },

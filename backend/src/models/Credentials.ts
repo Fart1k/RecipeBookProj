@@ -3,7 +3,6 @@ import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequel
 
 export class Credential extends Model<InferAttributes<Credential>, InferCreationAttributes<Credential>> {
     declare id: string
-    declare UserId: string
     declare UserType: string
 
     declare createdAt: CreationOptional<Date>
@@ -20,14 +19,11 @@ export default function initCredentialModel(
                 defaultValue: DataTypes.UUIDV4,
                 primaryKey: true
             },
-            UserId: {
-                type: DataTypes.UUID,
-                allowNull: false
-            },
             //List<Credentials>
             UserType: {
                 type: DataTypes.STRING,
-                allowNull: false
+                allowNull: false,
+                unique: true
             },
             createdAt: DataTypes.DATE,
             updatedAt: DataTypes.DATE,
