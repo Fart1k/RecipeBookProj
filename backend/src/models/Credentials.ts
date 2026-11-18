@@ -1,7 +1,5 @@
-import type { UUID } from "node:crypto";
 import { DataTypes, Model, UUIDV4 } from "sequelize"
 import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
-import type { Json } from "sequelize/lib/utils";
 
 export class Credential extends Model<InferAttributes<Credential>, InferCreationAttributes<Credential>> {
     declare id: string
