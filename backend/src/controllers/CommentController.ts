@@ -32,7 +32,7 @@ const CommentController = {
 
             await db.users.update({CommentsListId: commentList.id}, {where: {id: userId}, transaction})
 
-            return db.comment.create({
+            const comment = await db.comment.create({
                 id: uuidv7(),
                 Author: userId,
                 RecipeId: recipeId,
@@ -40,6 +40,16 @@ const CommentController = {
                 Rating: rating,
                 CommentBody: commentText || ""
             }, {transaction})
+
+            const comments = await db.comment.findAll({ where: {RecipeId: recipeId}, transaction })
+
+            const ratings = comments
+                                .map(comment => comment.Rating)
+                                .filter(rating => rating !== null)
+
+            const averageRating = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+
+            await recipe.update({ RatingOverall: Number(averageRating.toFixed(1)) }, {transaction})
         })
 
         return res.status(201).json(newComment);
