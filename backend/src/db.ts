@@ -5,7 +5,7 @@ import UserModel from "./models/User.ts";
 import CategoryModel from "./models/Category.ts";
 import CredentialsModel from "./models/Credentials.ts";
 import FavoriteModel from "./models/Favorites.ts";
-import CommentModel from "./models/Commets.ts";
+import CommentModel, { Comment } from "./models/Commets.ts";
 import CommentListModel from "./models/CommentsList.ts";
 import UserRecipesCollectionModel from "./models/UserRecipesCollection.ts"
 
@@ -50,6 +50,10 @@ _User.belongsTo(_Credentials, {foreignKey: "CredentialId"})
 //Assotiation for users - recipes 1:N
 _User.hasMany(_Recipe, {foreignKey: "UserId", as: "Recipes"})
 _Recipe.belongsTo(_User, {foreignKey: "UserId", as: "User"})
+
+//Assotiation for users - comments 1:N
+_User.hasMany(_Comment, {foreignKey: "Author", as: "Comments"})
+_Comment.belongsTo(_User, {foreignKey: "Author", as: "User"})
 const db = {
     Sequelize,
     sequelize,

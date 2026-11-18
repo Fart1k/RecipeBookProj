@@ -6,8 +6,8 @@ export class Comment extends Model<InferAttributes<Comment>, InferCreationAttrib
     declare id: string
     declare CommentBody: string
     declare Author: string
-    declare RecipeId: Json
-    declare CommentListId: Json
+    declare RecipeId: string
+    declare CommentListId: string
 
     declare Rating: CreationOptional<number | null>
     declare createdAt: CreationOptional<Date>
@@ -37,11 +37,11 @@ export default function initCommentModel(
                 allowNull: false
             },
             RecipeId: {
-                type: DataTypes.JSON,
+                type: DataTypes.UUID,
                 allowNull: false
             },
             CommentListId: {
-                type: DataTypes.JSON,
+                type: DataTypes.UUID,
                 allowNull: false
             },
             createdAt: DataTypes.DATE,
