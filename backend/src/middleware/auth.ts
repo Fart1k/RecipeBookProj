@@ -2,18 +2,31 @@ import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; 
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1]; 
     if (!token) {
         return res.status(401).json({ error: 'Unauthenticated request: Missing token' });
     }
-    jwt.verify(token, process.env.JWT_SECRET || 'a7bcb73e7e0540506fc45aed4054c6da5175160c1b772fe52b3747d9e5291469', (err: any, user: any) => {
-        if (err) {
-            return res.status(401).json({ error: 'Invalid or expired token' });
-        }    
-        (req as any).user = user;
-        next();
-    });
+
+    const jwtSecret = process.env.JWT_SECRET
+    if(!jwtSecret) {
+        return res.status(500).json({ error: "JWT Secret is not configured" })
+    }
+
+    try {
+        const user = jwt.verify(token, jwtSecret)
+
+        if (typeof user === "string" || !user.id || !user.role) {
+            return res.status(401).json({ error: "Invalid token" })
+        }
+
+        (req as any).user = user
+    }
+    catch (error) {
+        return res.status(401).json({ error: "Invalid or expired token" })
+    }
+
+    next()
 };
 
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
