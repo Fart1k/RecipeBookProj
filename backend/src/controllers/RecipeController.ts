@@ -7,11 +7,12 @@ import { Op } from "sequelize";
 
 const RecipeController = {
     async create(req: express.Request, res: express.Response) {
+        const userId = (req as any).user.id
         if (
             !req.body.RecipeTitle ||
             !req.body.Instructions ||
             !req.body.Ingredients ||
-            req.body.IsVisibleToOther
+            typeof req.body.IsVisibleToOther !== "boolean"
         ) {
             return res.status(400).send({
                 error: "Missing parameters, please review data"
@@ -20,6 +21,7 @@ const RecipeController = {
 
         const newRecipe = {
             id: uuidv7(),
+            UserId: userId, 
             RecipeTitle: req.body.RecipeTitle,
             Instructions: req.body.Instructions,
             Ingredients: req.body.Ingredients,
@@ -35,7 +37,8 @@ const RecipeController = {
    async getAll(req: express.Request, res: express.Response) {
         const { search, category } = req.query;
         const whereClause: any = {
-            Status: true
+            Status: true,
+            IsVisibleToOther: true
         };
         if (search) {
             whereClause.RecipeTitle = {
@@ -55,9 +58,8 @@ const RecipeController = {
     },
     async getByID(req: express.Request, res: express.Response) {
         const recipeID: string = req.params.ID as string;
-        console.log(recipeID);
         const recipe = await db.recipes.findByPk(recipeID);
-        if (!recipe) {
+        if (!recipe || !recipe.Status || !recipe.IsVisibleToOther) {
             res.status(404).send({
                 error: `Recipe with this ID is not found: ${recipeID}`
             });
@@ -107,6 +109,11 @@ const RecipeController = {
         const recipe = await db.recipes.findByPk(recipeID)
         if(!recipe) {
             res.status(404).send({error: `Recipe with this ID is not found. ${recipeID}`})
+            return null
+        }
+
+        if (recipe.UserId !== (req as any).user.id) {
+            res.status(403).send({ error: "Access denied" })
             return null
         }
         return recipe

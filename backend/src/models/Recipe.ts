@@ -8,6 +8,7 @@ export class Recipe extends Model<InferAttributes<Recipe>, InferCreationAttribut
     declare Ingredients: string
     declare IsVisibleToOther: boolean
     declare Status: boolean
+    declare UserId: string | null
 
     declare ImageUrl: CreationOptional<string | null>
     declare RatingOverall: CreationOptional<number | null>
@@ -49,6 +50,10 @@ export default function RecipeModel(
             },
             Status: {
                 type: DataTypes.BOOLEAN
+            },
+            UserId: {
+                type: DataTypes.UUID,
+                allowNull: false
             },
             createdAt: DataTypes.DATE,
             updatedAt: DataTypes.DATE,
