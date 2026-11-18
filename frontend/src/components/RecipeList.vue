@@ -7,6 +7,7 @@ const Recipe = ref<RecipeSummary[]>([])
 const loading = ref(false)
 const error = ref("")
 
+
 async function loadRecipes(){
     loading.value = true 
     error.value = ""
@@ -33,7 +34,7 @@ onMounted(loadRecipes)
         <p v-else-if="Recipe.length === 0">No recipes have found</p>
         <ul v-else>
             <li v-for="Recipe in Recipe" :key="Recipe.id">
-                {{ Recipe.RecipeName }} ({{ Recipe.id }})
+                <button @click="emit("select",Recipe.id)"></button>{{ Recipe.RecipeName }} ({{ Recipe.id }})
 
             </li>
         </ul>
