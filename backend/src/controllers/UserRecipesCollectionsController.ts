@@ -3,41 +3,100 @@ import { db } from "../db.ts"
 import Utilities from "./Utilities.ts"
 import { v7 as uuidv7 } from "uuid"
 
-
 const UserRecipesCollectionsController = {
     async create(req: express.Request, res: express.Response) {
-        const userWhoUploaded = "11cb8fd0-d70c-11f1-8dc2-901b0eec5991"
+        const userId = (req as any).user?.id
+        if (!userId) {
+            return res.status(401).send({ error: "Unauthorized: Missing user token" })
+        }
         if (!req.body.CollectionName || !req.body.RecipeIds) {
             return res.status(400).send({ error: "Missing parameters. Please review data"})
         }
-
-
-
         const newUserRecipeCollection = {
             id: uuidv7(),
             CollectionName: req.body.CollectionName,
             CollectionDescription: req.body.CollectionDescription,
-            UserId: userWhoUploaded,
+            UserId: userId,
             RecipeIds: req.body.RecipeIds,
             createdAt: new Date(),
             updatedAt: new Date()
         }
-
         const addedUserRecipeCollection = await db.userRecipesCollection.create(newUserRecipeCollection)
-
         const collectionWithUser = await db.userRecipesCollection.findByPk(
             addedUserRecipeCollection.id, 
             {
                 include: [
                     {
                         model: db.users,
-                        as: "User"
+                        as: "User",
+                        attributes: { exclude: ["PasswordHash"] }
                     }
-                ]
-            }
+                ]  }
         )
-
         return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${addedUserRecipeCollection.id}`).status(201).json(collectionWithUser)
+    },
+    async getAll(req: express.Request, res: express.Response) {
+        const collections = await db.userRecipesCollection.findAll()
+
+        return res.status(200).send(collections.map(({ id, CollectionName }: any) => ({ id, CollectionName})))
+    },
+    async getById(req: express.Request, res: express.Response) {
+        const collectionId: string = req.params.ID as string
+        const collection = await db.userRecipesCollection.findByPk(collectionId)
+        if (!collection) {
+            res.status(404).send({error: `Recipe Collection with this ID is not found: ${collectionId}`})
+            return null
+        }
+        return res.status(200).send(collection)
+    },
+    async modifyById(req: express.Request, res: express.Response) {
+        if (!req.params.ID) {
+            return res.status(400).send({error: "No ID supplied"})
+        }
+        if (typeof req.body.CollectionName !== "string" ||
+            !req.body.CollectionName.trim() ||
+            !Array.isArray(req.body.RecipeIds) ||
+            !req.body.RecipeIds.every((id: unknown) => typeof id === "string" && id.length > 0) ||
+            typeof req.body.CollectionDescription !== "string" 
+        ) {
+            return res.status(400).send({error: "Incorrect or missing data"})
+        }
+        const collectionToBeModified = await UserRecipesCollectionsController.getCollection(req, res)
+        if (!collectionToBeModified) {return}
+        const modifiedCollection = {
+            CollectionName: req.body.CollectionName,
+            RecipeIds: req.body.RecipeIds,
+            CollectionDescription: req.body.CollectionDescription,
+            updatedAt: new Date()
+        }
+        await db.userRecipesCollection.update(modifiedCollection, {where : {id: collectionToBeModified.id}})
+
+        return res.location(`${Utilities.getBaseURL(req)}/userrecipescollections/${collectionToBeModified.id}`)
+            .status(201)
+            .send(modifiedCollection)
+    },
+    async deleteById(req: express.Request, res: express.Response) {
+        const collectionToBeDeleted: any = await UserRecipesCollectionsController.getCollection(req, res)
+        if (!collectionToBeDeleted) {return}
+
+        await collectionToBeDeleted.destroy()
+        return res.status(204).send({error: "No content. "})
+    },
+    async getCollection(req: express.Request, res: express.Response) {
+        let collectionId: string = req.params.ID as string
+
+        const collection = await db.userRecipesCollection.findByPk(collectionId)
+        if (!collection) {
+            res.status(404).send({error: `Recipe with this ID is not found ${collectionId}`})
+            return null
+        }
+
+        if (collection.UserId !== (req as any).user.id) {
+            res.status(403).send({ error: "Access denied" })
+            return null
+        }
+
+        return collection
     }
 }
 export default UserRecipesCollectionsController

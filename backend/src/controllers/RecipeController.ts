@@ -3,14 +3,16 @@ import { db } from "../db.ts";
 import Utilities from "./Utilities.ts";
 import { v7 as uuidv7 } from "uuid";
 import { error } from "node:console"
+import { Op } from "sequelize";
 
 const RecipeController = {
     async create(req: express.Request, res: express.Response) {
+        const userId = (req as any).user.id
         if (
             !req.body.RecipeTitle ||
             !req.body.Instructions ||
             !req.body.Ingredients ||
-            req.body.IsVisibleToOther
+            typeof req.body.IsVisibleToOther !== "boolean"
         ) {
             return res.status(400).send({
                 error: "Missing parameters, please review data"
@@ -19,6 +21,7 @@ const RecipeController = {
 
         const newRecipe = {
             id: uuidv7(),
+            UserId: userId, 
             RecipeTitle: req.body.RecipeTitle,
             Instructions: req.body.Instructions,
             Ingredients: req.body.Ingredients,
@@ -31,22 +34,32 @@ const RecipeController = {
         return res.status(201).json(createdRecipe);
     },
 
-    async getAll(req: express.Request, res: express.Response) {
+   async getAll(req: express.Request, res: express.Response) {
+        const { search, category } = req.query;
+        const whereClause: any = {
+            Status: true,
+            IsVisibleToOther: true
+        };
+        if (search) {
+            whereClause.RecipeTitle = {
+                [Op.iLike]: `%${search}%`
+            };
+        }
+        if (category) {   
+            whereClause.Category = category;
+        }
         const recipes = await db.recipes.findAll({
-            where: {
-                Status: true
-            }
+            where: whereClause
         });
-        console.log("getAll", recipes);
+        console.log("getAll with filters", recipes);
         return res
-        .status(200)
-        .send(recipes.map(({ id, RecipeTitle }: any) => ({ id, RecipeTitle })))
+            .status(200)
+            .json(recipes.map(({ id, RecipeTitle }: any) => ({ id, RecipeTitle })));
     },
     async getByID(req: express.Request, res: express.Response) {
         const recipeID: string = req.params.ID as string;
-        console.log(recipeID);
         const recipe = await db.recipes.findByPk(recipeID);
-        if (!recipe) {
+        if (!recipe || !recipe.Status || !recipe.IsVisibleToOther) {
             res.status(404).send({
                 error: `Recipe with this ID is not found: ${recipeID}`
             });
@@ -55,11 +68,11 @@ const RecipeController = {
         return res.status(200).send(recipe);
     },
     async modifyById(req: express.Request, res: express.Response){
-        if (!req.params.id){
+        if (!req.params.ID){
             return res.status(400).send({"error":"No ID supplied"})
         }
         
-        const recipeToBeModified = await this.getRecipe(req,res)
+        const recipeToBeModified = await RecipeController.getRecipe(req, res)
 
         if (!recipeToBeModified) {
             return
@@ -73,7 +86,7 @@ const RecipeController = {
             ImageUrl: req.body.ImageUrl || null
         }
 
-        await db.recipes.update(modifiedRecipe, { where: {id: req.params.id} })
+        await db.recipes.update(modifiedRecipe, { where: {id: req.params.ID} })
 
         return res.location(`${Utilities.getBaseURL(req)}/recipes/${recipeToBeModified.id}`)
         .status(200)
@@ -81,7 +94,7 @@ const RecipeController = {
     },
   
     async deleteById(req: express.Request, res: express.Response) {
-        const recipeToBeDeleted: any = await this.getRecipe(req, res);
+        const recipeToBeDeleted: any = await RecipeController.getRecipe(req, res);
         if (!recipeToBeDeleted) {
             return;
         }
@@ -91,11 +104,16 @@ const RecipeController = {
     },
 
     async getRecipe(req: express.Request, res: express.Response) {
-        let recipeID: string = req.params.id as string
+        let recipeID: string = req.params.ID as string
 
         const recipe = await db.recipes.findByPk(recipeID)
         if(!recipe) {
             res.status(404).send({error: `Recipe with this ID is not found. ${recipeID}`})
+            return null
+        }
+
+        if (recipe.UserId !== (req as any).user.id) {
+            res.status(403).send({ error: "Access denied" })
             return null
         }
         return recipe
