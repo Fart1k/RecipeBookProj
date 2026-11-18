@@ -1,10 +1,10 @@
 import type express from "express";
-import RecipeController from "../src/controllers/RecipeController.ts";
-import UserController from "../src/controllers/UserController.ts";
-import AdminController from "../src/controllers/AdminController.ts"
-import UserRecipesCollectionController from "../src/controllers/UserRecipesCollectionsController.ts"
-import CommentController from "../src/controllers/CommentController.ts";
-import { authenticateToken, isAdmin } from "../src/middleware/auth.ts";
+import RecipeController from "../controllers/RecipeController.ts";
+import UserController from "../controllers/UserController.ts";
+import AdminController from "../controllers/AdminController.ts"
+import UserRecipesCollectionController from "../controllers/UserRecipesCollectionsController.ts"
+import CommentController from "../controllers/CommentController.ts";
+import { authenticateToken, isAdmin } from "../middleware/auth.ts";
 
 export default (app: express.Application): void => {
  //Recipes routes
