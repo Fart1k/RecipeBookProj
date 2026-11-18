@@ -7,18 +7,18 @@ import CommentController from "../controllers/CommentController.ts";
 import { authenticateToken, isAdmin } from "../middleware/auth.ts";
 
 export default (app: express.Application): void => {
- //Recipes routes
+  //Recipes routes
 
   app.route("/recipes")
     .get(RecipeController.getAll)
-    .post(RecipeController.create);
+    .post(authenticateToken, RecipeController.create);
 
   app.route("/recipes/:ID")
     .get(RecipeController.getByID)
-    .put(RecipeController.modifyById)
-    .delete(RecipeController.deleteById);
+    .put(authenticateToken, RecipeController.modifyById)
+    .delete(authenticateToken, RecipeController.deleteById);
 
-//Users Routes
+  //Users Routes
 
   app.route("/users/register")
     .post(UserController.create);
@@ -29,20 +29,21 @@ export default (app: express.Application): void => {
   //UserRecipesCollection routes
 
   app.route("/userrecipescollections/")
-    .post(UserRecipesCollectionController.create)
+    .post(authenticateToken, UserRecipesCollectionController.create)
     .get(UserRecipesCollectionController.getAll)
   
   app.route("/userrecipescollections/:ID")
     .get(UserRecipesCollectionController.getById)
-    .put(UserRecipesCollectionController.modifyById)
-    .delete(UserRecipesCollectionController.deleteById)
+    .put(authenticateToken, UserRecipesCollectionController.modifyById)
+    .delete(authenticateToken, UserRecipesCollectionController.deleteById)
 
+  //Comments routes
 
   app.route("/recipes/:ID/comments")
     .get(CommentController.getByRecipe)
     .post(authenticateToken, CommentController.create);
  
-    //Admin routes
+  //Admin routes
 
   app.route("/admin/recipestoapprove")
     .get(authenticateToken, isAdmin, AdminController.getAllRecipes);
