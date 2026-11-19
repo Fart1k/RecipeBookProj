@@ -28,6 +28,49 @@ describe("Authentication", () => {
         authenticateToken(req, res, next)
 
         expect(res.status).toHaveBeenCalledWith(401)
+        expect(res.json).toHaveBeenCalledWith({error: "Unauthenticated request: Missing token"})
         expect(next).not.toHaveBeenCalled()
     })
+
+    test("JWTisNotConfigured_With500status", () => {
+      vi.stubEnv("JWT_SECRET", undefined)  
+
+      const req = {
+            headers: {authorization: "Bearer test-token"} 
+        } as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        const next = vi.fn()
+
+        authenticateToken(req, res, next)
+
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({error: "JWT Secret is not configured"})
+        expect(next).not.toHaveBeenCalled()
+
+    })
+
+    test("InvalidToken_With401status", () => {
+        const req = {
+            headers: {authorization: "Bearer invalid-token"}
+        } as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        const next = vi.fn()
+
+        authenticateToken(req, res, next)
+
+        expect(res.status).toHaveBeenCalledWith(401)
+        expect(res.json).toHaveBeenCalledWith({error: "Invalid or expired token"})
+        expect(next).not.toHaveBeenCalled()
+    }) 
+
 })
