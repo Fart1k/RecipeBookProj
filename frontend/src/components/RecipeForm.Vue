@@ -1,111 +1,88 @@
 <script setup lang="ts">
-import {ref, onMounted, watch} from "vue"
-import {recipesServices} from "../services/recipeServices";
-import { Category, type RecipeInput } from "../types/Recipe";
+import { reactive, ref, watch } from 'vue'
+import { recipeServices } from '../services/recipeServices'
+import type { RecipeInput } from '../types/Recipe'
 
-cont props = defineProps<{
-    recipeID?: string | null
-}>()
+const props = defineProps<{ recipeId?: string | null }>()
+const emit = defineEmits<{ saved: []; cancel: [] }>()
 
-const emit = defineEmits<(
-    saved: []
-)>()
+const emptyRecipe = (): RecipeInput => ({
+  RecipeTitle: '',
+  Instructions: '',
+  Ingredients: '',
+  ImageUrl: null,
+  IsVisibleToOther: false,
+})
 
-const categories = ref<Category[]>([])
-const erorr = ref("")
+const form = reactive<RecipeInput>(emptyRecipe())
+const error = ref('')
 const saving = ref(false)
 
-function emptyRecipe(): RecipeInput{
-    return {
-        RecipeName: "",
-        RecipeDescription: "",
-        ReleaseDate: "",
-        CategoryID: "",
-        ImageURL: null,
-    }
+async function loadRecipe() {
+  error.value = ''
+  Object.assign(form, emptyRecipe())
+
+  if (!props.recipeId) return
+
+  try {
+    const recipe = await recipeServices.getById(props.recipeId)
+    Object.assign(form, {
+      RecipeTitle: recipe.RecipeTitle,
+      Instructions: recipe.Instructions,
+      Ingredients: recipe.Ingredients,
+      ImageUrl: recipe.ImageUrl,
+      IsVisibleToOther: recipe.IsVisibleToOther,
+    })
+  } catch (err) {
+    error.value = 'Could not load recipe'
+    console.error(err)
+  }
 }
 
-const form =ref<RecipeInput(emptyRecipe())>
+async function saveRecipe() {
+  saving.value = true
+  error.value = ''
 
-async function loadRecipes(){
-    error.value = ""
-    if (!props.recipeID){
-        form.value = emptyRecipe()
-        return
+  try {
+    const payload = { ...form, IsVisibleToOther: props.recipeId ? form.IsVisibleToOther : false }
+    if (props.recipeId) {
+      await recipeServices.update(props.recipeId, payload)
+    } else {
+      await recipeServices.create(payload)
     }
+    emit('saved')
+  } catch (err) {
+    error.value = 'Could not save recipe'
+    console.error(err)
+  } finally {
+    saving.value = false
+  }
 }
-try{
-    const recipe = await recipesServices.getById(props.recipeID)
-    form value = {
-        RecipeName: recipe.RecipeName,
-        RecipeDescription: recipe.RecipeDescription.
-        ReleaseDate: recipe.ReleaseDate,
-        CategoryID: "",
-        ImageURl
-    }
-      catch(err){
-        error.value = "cannot load this recipe"
-        console.error
-    }
 
-    } 
-
-    async function saveRecipe(){
-        saving.value = true
-        error.value = ""
-
-        try {
-            if (mergeProps.recipeID){
-                await recipesServices.update(props.recipeID, form.value)
-            } else {
-                await recipesServices.create(form.value)
-            }
-
-            emit("saved")
-
-            if (props.recipeID) (form.value=emptyRecipe())
-            catch(err){
-                error.value = "Saving failed"
-                console.error(err)
-        } finally {
-            saving.value = false
-        }
-        }
-    
-
-
-    //OnMounted(loadCategories)
-
-    watch( () => props.recipeID, loadRecipe, {immediate: true})
-
-
-
-    }
+watch(() => props.recipeId, loadRecipe, { immediate: true })
 </script>
 
 <template>
-    <section>
-        <h2>{{ recipeID ? "Edit Recipe : " "Create Recipe" }}</h2>
+  <section>
+    <h2>{{ recipeId ? 'Edit recipe' : 'Create recipe' }}</h2>
+    <form @submit.prevent="saveRecipe">
+      <label for="recipe-title">Recipe title</label>
+      <input id="recipe-title" v-model.trim="form.RecipeTitle" required />
 
-        <form @SubmitEvent.prevent="saveRecipe">
-            <label for="recipeName">Recipe name</label>
-            <input id="recipeName" v-model="form.RecipeName" required/>
+      <label for="recipe-ingredients">Ingredients</label>
+      <textarea id="recipe-ingredients" v-model.trim="form.Ingredients" required rows="4" />
 
-            <label for="recipeDescription">Recipe Description</label>
-            <input id="recipeDescription" v-model="form.RecipeDescription" required/>
-            
-            <label for="releaseDate">Release Date</label>
-            <input id="releaseDate" v-model="form.releaseDate" required/>
-            
-          //category later
+      <label for="recipe-instructions">Instructions</label>
+      <textarea id="recipe-instructions" v-model.trim="form.Instructions" required rows="6" />
 
-          <label for="imageUrl">Where image</label>
-            <input id="imageurl" v-model="form.ImageUrl" required/>
-            
-            <p v-if="error">{{ error }}</p>
+      <label for="recipe-image">Image URL</label>
+      <input id="recipe-image" v-model.trim="form.ImageUrl" type="url" />
 
-            <button type ="submit" :diabled="saving">
-                </button>
-            </form>
-    </section>
+      <p v-if="error" role="alert">{{ error }}</p>
+      <div class="actions">
+        <button type="submit" :disabled="saving">{{ saving ? 'Saving' : 'Save recipe' }}</button>
+        <button type="button" class="secondary" @click="emit('cancel')">Cancel</button>
+      </div>
+    </form>
+  </section>
 </template>

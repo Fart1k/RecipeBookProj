@@ -1,30 +1,23 @@
-//getall
-
 export interface RecipeSummary {
-    id:string,
-    RecipeName: string
+  id: string
+  RecipeTitle: string
 }
-//getbyid/modifybyid
-export interface Recipe {
-    if: string,
-    RecipeName: string,
-    RecipeDescription: string,
-    CategoryID: string,
-    ImageURL: string | null,
-    IsOwnedBy: number,
-    Review: unknown | null,
-    Comments: unknown | null
 
+export interface Recipe {
+  id: string
+  RecipeTitle: string
+  Instructions: string
+  Ingredients: string
+  ImageUrl: string | null
+  IsVisibleToOther: boolean
+  Status: boolean
+  RatingOverall: number | null
 }
-//create
+
 export interface RecipeInput {
-    RecipeName: string,
-    RecipeDescription: string,
-    CategoryID: string,
-    ImageURL: string | null,
-}
-//categoryvalue
-export interface Category {
-    id:string,
-    CategoryName: string
+  RecipeTitle: string
+  Instructions: string
+  Ingredients: string
+  ImageUrl: string | null
+  IsVisibleToOther: boolean
 }
