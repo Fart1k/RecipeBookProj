@@ -60,12 +60,12 @@ const UserController = {
         try {
             const user = await db.users.findOne({ where: { EmailAddress: (req.body.EmailAddress).trim().toLowerCase() } });
             if (!user) {
-                return res.status(401).send({ error: "Invalid email or password" });
+                return res.status(401).send({ error: "User not found" });
             }
 
             const isPasswordValid = await bcrypt.compare(req.body.Password, user.PasswordHash);
             if (!isPasswordValid) {
-                return res.status(401).send({ error: "Invalid email or password" });
+                return res.status(401).send({ error: "Invalid password" });
             }
 
             if(user.UserStatus !== "verified") {
