@@ -49,4 +49,11 @@ export default (app: express.Application): void => {
   
   app.route("/admin/recipestoapprove/:ID")
     .put(authenticateToken, isAdmin, AdminController.approveRecipe);
+
+  app.route("/users/profile")
+   .get(authenticateToken, UserController.getProfile)
+   .put(authenticateToken, UserController.updateProfile);
+
+  app.route("/users/password")
+   .put(authenticateToken, UserController.changePassword);
 };
