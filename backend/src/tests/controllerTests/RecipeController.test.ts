@@ -49,19 +49,26 @@ describe("RecipeController", () => {
             ]
         )
 
-        const req = {} as Request
+        const req = {
+            query: {}
+        } as Request
+
         const res = {
             status: vi.fn().mockReturnThis(),
-            send: vi.fn().mockReturnThis()
+            json: vi.fn().mockReturnThis()
         } as unknown as Response
 
         // Tegevus
         await _RecipeController.getAll(req, res)
 
         // Kontroll
-        expect(mocks.findAll).toHaveBeenCalledOnce()
+        expect(mocks.findAll).toHaveBeenCalledExactlyOnceWith({where: {
+            Status: true,
+            IsVisibleToOther: true
+        }})
+
         expect(res.status).toHaveBeenCalledWith(200)
-        expect(res.send).toHaveBeenCalledWith([
+        expect(res.json).toHaveBeenCalledWith([
             {id: "01a1c462-5d99-771d-99d3-ae6307063bfc", RecipeTitle: "recipe1"},
             {id: "01a1c463-53d3-714f-8ad5-83119e0cd2ce", RecipeTitle: "recipe2"},
             {id: "58fe1398-dcd8-11f1-8dc2-901b0eec5991", RecipeTitle: "recipe3"}
@@ -105,7 +112,8 @@ describe("RecipeController", () => {
     test("Modify_Recipe_With200Status", async () => {
         const existingRecipe = {
             id: "58fe1398-dcd8-11f1-8dc2-901b0eec5991",
-            RecipeTitle: "recipe1"
+            RecipeTitle: "recipe1",
+            UserId: "01a1c462-5d99-771d-99d3-ae6307063bfc"
         }
 
         const modifiedRecipe = {
@@ -121,7 +129,11 @@ describe("RecipeController", () => {
 
         const req = {
             params: {
-                id: existingRecipe.id
+                ID: existingRecipe.id
+            },
+            user: {
+                id: existingRecipe.UserId,
+                role: "user"
             },
             body: modifiedRecipe,
             protocol: "http",
@@ -165,6 +177,8 @@ describe("RecipeController", () => {
     });
 
     test("Create_Recipe_With201Status", async () => {
+        const userId = "01a1c462-5d99-771d-99d3-ae6307063def"
+
         const recipeData = {
             RecipeTitle: "New recipe",
             Instructions: "Cook for 20 minutes",
@@ -174,6 +188,7 @@ describe("RecipeController", () => {
 
         const createdRecipe = {
             id: "01a1c462-5d99-771d-99d3-ae6307063bfc",
+            UserId: userId,
             ...recipeData,
             Status: false
         }
@@ -181,8 +196,12 @@ describe("RecipeController", () => {
         mocks.create.mockResolvedValue(createdRecipe)
 
         const req = {
-            body: recipeData
-        } as Request
+            body: recipeData,
+            user: {
+                id: userId,
+                role: "user"
+            }
+        } as unknown as Request
 
         const res = {
             status: vi.fn().mockReturnThis(),
@@ -193,6 +212,7 @@ describe("RecipeController", () => {
 
         expect(mocks.create).toHaveBeenCalledExactlyOnceWith({
             id: expect.any(String),
+            UserId: userId,
             ...recipeData,
             Status: false
         })
