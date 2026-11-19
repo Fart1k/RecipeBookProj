@@ -28,7 +28,8 @@ const UserRecipesCollectionsController = {
                 include: [
                     {
                         model: db.users,
-                        as: "User"
+                        as: "User",
+                        attributes: { exclude: ["PasswordHash"] }
                     }
                 ]  }
         )
@@ -50,7 +51,7 @@ const UserRecipesCollectionsController = {
     },
     async modifyById(req: express.Request, res: express.Response) {
         if (!req.params.ID) {
-            return res.status(404).send({error: "No ID supplied"})
+            return res.status(400).send({error: "No ID supplied"})
         }
         if (typeof req.body.CollectionName !== "string" ||
             !req.body.CollectionName.trim() ||
@@ -89,6 +90,12 @@ const UserRecipesCollectionsController = {
             res.status(404).send({error: `Recipe with this ID is not found ${collectionId}`})
             return null
         }
+
+        if (collection.UserId !== (req as any).user.id) {
+            res.status(403).send({ error: "Access denied" })
+            return null
+        }
+
         return collection
     }
 }

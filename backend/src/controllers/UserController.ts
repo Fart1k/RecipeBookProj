@@ -7,10 +7,9 @@ import jwt from "jsonwebtoken";
 const UserController = {
     async create(req: express.Request, res: express.Response) {
         if (
-            !req.body.Username ||
-            !req.body.Email ||
-            !req.body.Password ||
-            !req.body.UserType
+            !req.body.UserName ||
+            !req.body.EmailAddress ||
+            !req.body.Password
         ) {
             return res.status(400).send({
                 error: "Missing parameters, please review data"
@@ -18,52 +17,48 @@ const UserController = {
         }
 
         try {
-        
-            const existingUser = await db.users.findOne({ where: { Email: req.body.Email } });
+            const existingUser = await db.users.findOne({ where: { EmailAddress: (req.body.EmailAddress).trim().toLowerCase() } });
             if (existingUser) {
                 return res.status(400).send({ error: "Email is already in use" });
             }
 
+            const credential = await db.credential.findOne({ where: {UserType: "user"} })
+            if (!credential) {
+                return res.status(404).send({ error: "Default user role not found"})
+            }
+
             const hashedPassword = await bcrypt.hash(req.body.Password, 10);
-            const userId = uuidv7();
-            const credentialId = uuidv7();
 
-            
             const newUser = await db.users.create({
-                id: userId,
-                Username: req.body.Username,
-                Email: req.body.Email,
+                id: uuidv7(),
+                UserName: req.body.UserName,
+                EmailAddress: req.body.EmailAddress,
                 PasswordHash: hashedPassword,
-                CredentialId: credentialId
-            });
-
-           
-            await db.credential.create({
-                id: credentialId,
-                Userid: userId,
-                UserType: req.body.UserType 
-            });
+                UserStatus: "verified",
+                CredentialId: credential.id
+            })
 
             return res.status(201).json({
                 message: "User registered successfully",
                 userId: newUser.id,
-                username: newUser.Username
+                username: newUser.UserName
             });
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Registration error:", error);
             return res.status(500).send({ error: "Internal server error" });
         }
     },
 
     async login(req: express.Request, res: express.Response) {
-        if (!req.body.Email || !req.body.Password) {
+        if (!req.body.EmailAddress || !req.body.Password) {
             return res.status(400).send({
                 error: "Email and password are required"
             });
         }
 
         try {
-            const user = await db.users.findOne({ where: { Email: req.body.Email } });
+            const user = await db.users.findOne({ where: { EmailAddress: (req.body.EmailAddress).trim().toLowerCase() } });
             if (!user) {
                 return res.status(401).send({ error: "Invalid email or password" });
             }
@@ -73,13 +68,27 @@ const UserController = {
                 return res.status(401).send({ error: "Invalid email or password" });
             }
 
-            const credential = await db.credential.findOne({ where: { Userid: user.id } });
-            const userType = credential ? credential.UserType : "User";
+            if(user.UserStatus !== "verified") {
+                return res.status(403).send({ error: "Account is not active"})
+            }
 
-        
+            const credential = await db.credential.findByPk(user.CredentialId);
+            if(!credential) {
+                return res.status(500).send({ error: "User role was not found" })
+            }
+
+            const jwtSecret = process.env.JWT_SECRET
+            if (!jwtSecret) {
+                return res.status(500).send({ error: "JWT secret is not configured" })
+            }
+
             const token = jwt.sign(
-                { id: user.id, email: user.Email, role: userType },
-                process.env.JWT_SECRET || "your_jwt_secret_key",
+                { 
+                    id: user.id, 
+                    email: user.EmailAddress, 
+                    role: credential.UserType 
+                },
+                jwtSecret,
                 { expiresIn: "24h" }
             );
 
@@ -88,13 +97,13 @@ const UserController = {
                 token,
                 user: {
                     id: user.id,
-                    username: user.Username,
-                    email: user.Email,
-                    role: userType
+                    username: user.UserName,
+                    email: user.EmailAddress,
+                    role: credential.UserType
                 }
             });
-        } catch (error) {
-            console.error("Login error:", error);
+        } 
+        catch (error) {
             return res.status(500).send({ error: "Internal server error" });
         }
     }
