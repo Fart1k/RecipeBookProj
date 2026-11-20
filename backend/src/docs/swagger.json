@@ -172,7 +172,7 @@
                                         },
                                         "IsVisibleToOther": {
                                             "type": "boolean",
-                                            "example": false
+                                            "example": true
                                         },
                                         "Status": {
                                             "type": "boolean",
@@ -464,6 +464,11 @@
                 "tags": ["Recipes"],
                 "summary": "Delete a recipe",
                 "description": "Deletes an existing recipe by ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "ID",
@@ -480,6 +485,12 @@
                 "responses": {
                     "204": {
                         "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AccessDenied"
                     },
                     "404": {
                         "description": "Recipe not found",
@@ -535,6 +546,11 @@
                 "tags": ["UserRecipesCollections"],
                 "summary": "Create new user recipes collection",
                 "description": "Creates a new collection",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -655,20 +671,7 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Unauthorized: Missing user token"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnauthorizedError"
                     }
                 }
             }
@@ -761,6 +764,11 @@
                 "tags": ["UserRecipesCollections"],
                 "summary": "Modify an existing collection data",
                 "description": "Updates an existing collection by its ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "ID",
@@ -877,6 +885,12 @@
                             }
                         }
                     },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AccessDenied"
+                    },
                     "404": {
                         "description": "Collection not found",
                         "content": {
@@ -899,6 +913,11 @@
                 "tags": ["UserRecipesCollections"],
                 "summary": "Delete a collection",
                 "description": "Deletes an existing collection by ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "ID",
@@ -915,6 +934,12 @@
                 "responses": {
                     "204": {
                         "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AccessDenied"
                     },
                     "404": {
                         "description": "Collection not found",
