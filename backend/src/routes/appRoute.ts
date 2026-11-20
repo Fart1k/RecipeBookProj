@@ -13,11 +13,14 @@ export default (app: express.Application): void => {
     .get(RecipeController.getAll)
     .post(authenticateToken, RecipeController.create);
 
+  app.route("/recipes/mine")
+    .get(authenticateToken, RecipeController.getMyRecipes)
+
   app.route("/recipes/:ID")
     .get(RecipeController.getByID)
     .put(authenticateToken, RecipeController.modifyById)
     .delete(authenticateToken, RecipeController.deleteById);
-
+    
   //Users Routes
 
   app.route("/users/register")
