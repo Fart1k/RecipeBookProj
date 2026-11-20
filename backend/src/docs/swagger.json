@@ -959,6 +959,117 @@
                     }
                 }
             }
+        },
+
+        "/users/register": {
+            "post": {
+                "tags": ["Users"],
+                "summary": "Register a new user",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "EmailAddress",
+                                    "Password",
+                                    "UserName"
+                                ],
+                                "properties": {
+                                    "EmailAddress": {
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    },
+                                    "Password": {
+                                        "type": "string",
+                                        "example": "TestPassword123"
+                                    },
+                                    "UserName": {
+                                        "type": "string",
+                                        "example": "TestUser"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User is successfully registered",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User registered successfully"
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                                        },
+                                        "username": {
+                                            "type": "string",
+                                            "example": "TestUser"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing parameters or email is already in use",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "MissingParameters": {
+                                        "value": {
+                                            "error": "Missing parameters. Please review data"
+                                        }
+                                    },
+                                    "ExistingEmail": {
+                                        "value": {
+                                            "error": "Email is already in use"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Default user role not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                     "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Default user role not found"
+                                        } 
+                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "users/login": {
+            "post": {
+                
+            }
         }
     }
 }
