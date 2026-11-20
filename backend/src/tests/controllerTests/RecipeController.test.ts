@@ -225,8 +225,12 @@ describe("RecipeController", () => {
         const req = {
             body: {
                 RecipeTitle: "New recipe"
+            },
+            user: {
+                id: "01a1c462-5d99-771d-99d3-ae6307063bfc",
+                role: "user"
             }
-        } as Request
+        } as unknown as Request
 
         const res = {
             status: vi.fn().mockReturnThis(),
@@ -248,14 +252,19 @@ describe("RecipeController", () => {
         const recipeToBeDeleted = {
             id: "58fe1398-dcd8-11f1-8dc2-901b0eec5991",
             RecipeTitle: "Recipe to be deleted",
-            destroy: vi.fn().mockResolvedValue(undefined)
+            destroy: vi.fn().mockResolvedValue(undefined),
+            UserId: "01a1c462-5d99-771d-99d3-ae6307063bfc"
         }
 
         mocks.findByPk.mockResolvedValue(recipeToBeDeleted)
 
         const req = {
             params: {
-                id: recipeToBeDeleted.id,
+                ID: recipeToBeDeleted.id,
+            },
+            user: {
+                id: recipeToBeDeleted.UserId,
+                role: "user"
             }
         } as unknown as Request
 
@@ -281,7 +290,11 @@ describe("RecipeController", () => {
 
         const req = {
             params: {
-                id: recipeId
+                ID: recipeId
+            },
+            user: {
+                id: "01a1c462-5d99-771d-99d3-ae6307063bfc",
+                role: "user"
             }
         } as unknown as Request
 
