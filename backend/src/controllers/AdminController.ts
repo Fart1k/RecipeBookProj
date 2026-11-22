@@ -80,6 +80,30 @@ const AdminController = {
         catch(error) {
             res.status(500).json({error: "Internal server error"})
         }
+    },
+
+    async banUser(req: express.Request, res: express.Response) {
+        try {
+            const userId = req.params.ID as string
+
+            if (userId === (req as any).user.id) {
+                return res.status(400).json({error: "You cannot ban yourself"})
+            }
+
+            const user = await db.users.findByPk(userId)
+
+            if(!user) {
+                return res.status(404).json({error: `User with this ID was not found: ${userId}`})
+            }
+
+            user.UserStatus = "banned"
+            await user.save()
+
+            return res.status(200).json({message: "User banned successfully"})
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
     }
 }
 

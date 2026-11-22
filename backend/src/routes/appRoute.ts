@@ -59,4 +59,7 @@ export default (app: express.Application): void => {
 
   app.route("/admin/users/:ID")
     .get(authenticateToken, isAdmin, AdminController.getById)
+
+  app.route("/admin/users/:ID/ban")
+    .put(authenticateToken, isAdmin, AdminController.banUser)
 };
