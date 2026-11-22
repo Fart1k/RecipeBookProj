@@ -71,4 +71,7 @@ export default (app: express.Application): void => {
 
   app.route("admin/recipes/:ID")
     .delete(authenticateToken, isAdmin, AdminController.deleteRecipe)
+
+  app.route("admin/comments/:ID")
+    .delete(authenticateToken, isAdmin, AdminController.deleteComment)
 };

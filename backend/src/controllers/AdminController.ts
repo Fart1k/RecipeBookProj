@@ -154,6 +154,58 @@ const AdminController = {
         catch (error) {
             return res.status(500).json({error: "Internal server error"})
         }
+    },
+
+    async deleteComment(req: express.Request, res:express.Response) {
+        try {
+            const commentId = req.params.ID as string
+
+            const comment = await db.comment.findByPk(commentId)
+            if (!comment) {
+                return res.status(404).json({error: `Comment with this ID was not found: ${commentId}`})
+            }
+
+            const recipe = await db.recipes.findByPk(comment.RecipeId)
+            if (!recipe) {
+                return res.status(404).json({error: `Recipe not found`})
+            }
+
+            await db.sequelize.transaction(async (transaction) => {
+                await comment.destroy({transaction})
+
+                const comments = await db.comment.findAll({
+                    where: {RecipeId: comment.RecipeId},
+                    transaction
+                })
+
+                const ratings = comments
+                                    .map(comment => comment.Rating)
+                                    .filter((rating): rating is number => rating != null)
+
+                let sum = 0
+                let count = 0
+                for(const comment of comments) {
+                    if (comment.Rating != null) {
+                        sum = sum + comment.Rating
+                        count++
+                    }
+                }
+
+                let averageRating = null
+                if (count > 0) {
+                    averageRating = Number((sum / count).toFixed(1))
+                }
+
+                await recipe.update(
+                    {RatingOverall: averageRating}, 
+                    {transaction}
+                )
+            })
+            return res.status(204).send()
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
     }
 }
 
