@@ -1,6 +1,5 @@
-import { application } from "express"
+
 import type {Recipe, RecipeSummary, RecipeInput, Category} from "../types/Recipe"
-import { receiveMessageOnPort } from "worker_threads"
 const API_URL = import.meta.env.VITE_BACKEND_URL
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {

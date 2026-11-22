@@ -117,7 +117,23 @@ const RecipeController = {
             return null
         }
         return recipe
-    }
+    },
+
+    async getMyRecipes(req: express.Request, res: express.Response) {
+        const userId = (req as any).user.id
+
+        const recipes = await db.recipes.findAll({
+            where: {UserId: userId},
+            attributes: [
+                "id",
+                "RecipeTitle",
+                "Status",
+                "IsVisibleToOther"
+            ]
+        })
+
+        return res.status(200).json(recipes)
+    },
     
 }
 

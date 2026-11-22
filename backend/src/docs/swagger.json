@@ -5,6 +5,66 @@
         "version": "1.0.0",
         "description": "API for Recipe Book application"
     },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "responses": {
+            "UnauthorizedError": {
+                "description": "Missing or invalid authentication token",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Invalid or expired token"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "AccessDenied": {
+                "description": "Access denied. You dont have enoght permission",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Access denied"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "InternalServerError": {
+                "description": "Internal Server Error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Internal server error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    
     "tags": [
         {
             "name": "Recipes",
@@ -31,7 +91,7 @@
         "/recipes": {
             "get": {
                 "tags": ["Recipes"],
-                "summary": "Get all recipes",
+                "summary": "Get all public and approved recipes",
                 "responses": {
                     "200": {
                         "description": "A list of recipes",
@@ -43,6 +103,7 @@
                                         "properties": {
                                             "id": {
                                                 "type": "string",
+                                                "format": "uuid",
                                                 "example": "123e4567-e89b-12d3-a456-426614174000"
                                             },
                                             "RecipeTitle": {
@@ -61,6 +122,11 @@
                 "tags": ["Recipes"],
                 "summary": "Create new recipe",
                 "description": "Creates a new recipe and submits it for admin approval",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -70,7 +136,8 @@
                                 "required": [
                                     "RecipeTitle",
                                     "Instructions",
-                                    "Ingredients"
+                                    "Ingredients",
+                                    "IsVisibleToOther"
                                 ],
                                 "properties": {
                                     "RecipeTitle" : {
@@ -121,11 +188,15 @@
                                         },
                                         "IsVisibleToOther": {
                                             "type": "boolean",
-                                            "example": false
+                                            "example": true
                                         },
                                         "Status": {
                                             "type": "boolean",
                                             "example": false
+                                        },
+                                        "UserId": {
+                                            "type": "string",
+                                            "format": "uuid"
                                         },
                                         "createdAt": {
                                             "type": "string",
@@ -155,6 +226,70 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Missing or invalid authentication token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid or expired token"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/recipes/mine": {
+            "get": {
+                "tags": ["Recipes"],
+                "summary": "Get all own recipes",
+                "description": "Returns all recipes belonging to the authenticated user",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of user's recipes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        },
+                                        "RecipeTitle": {
+                                            "type": "string",
+                                            "example": "Spaghetti Carbonara"
+                                        },
+                                        "Status": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "IsVisibleToOther": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
@@ -256,6 +391,11 @@
                 "tags": ["Recipes"],
                 "summary": "Modify an existing recipe data",
                 "description": "Updates an existing recipe bt its ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "ID",
@@ -375,6 +515,12 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AccessDenied"
                     }
                 }
             },
@@ -382,6 +528,11 @@
                 "tags": ["Recipes"],
                 "summary": "Delete a recipe",
                 "description": "Deletes an existing recipe by ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "ID",
@@ -398,6 +549,12 @@
                 "responses": {
                     "204": {
                         "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AccessDenied"
                     },
                     "404": {
                         "description": "Recipe not found",
@@ -453,6 +610,11 @@
                 "tags": ["UserRecipesCollections"],
                 "summary": "Create new user recipes collection",
                 "description": "Creates a new collection",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -573,20 +735,7 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Unauthorized: Missing user token"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/UnauthorizedError"
                     }
                 }
             }
@@ -679,6 +828,11 @@
                 "tags": ["UserRecipesCollections"],
                 "summary": "Modify an existing collection data",
                 "description": "Updates an existing collection by its ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "ID",
@@ -795,6 +949,12 @@
                             }
                         }
                     },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AccessDenied"
+                    },
                     "404": {
                         "description": "Collection not found",
                         "content": {
@@ -817,6 +977,11 @@
                 "tags": ["UserRecipesCollections"],
                 "summary": "Delete a collection",
                 "description": "Deletes an existing collection by ID",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "ID",
@@ -833,6 +998,12 @@
                 "responses": {
                     "204": {
                         "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/UnauthorizedError"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AccessDenied"
                     },
                     "404": {
                         "description": "Collection not found",
@@ -851,6 +1022,278 @@
                         }
                     }
                 }
+            }
+        },
+
+        "/users/register": {
+            "post": {
+                "tags": ["Users"],
+                "summary": "Register a new user",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "EmailAddress",
+                                    "Password",
+                                    "UserName"
+                                ],
+                                "properties": {
+                                    "EmailAddress": {
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    },
+                                    "Password": {
+                                        "type": "string",
+                                        "example": "TestPassword123"
+                                    },
+                                    "UserName": {
+                                        "type": "string",
+                                        "example": "TestUser"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User is successfully registered",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User registered successfully"
+                                        },
+                                        "userId": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                                        },
+                                        "username": {
+                                            "type": "string",
+                                            "example": "TestUser"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing parameters or email is already in use",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "MissingParameters": {
+                                        "value": {
+                                            "error": "Missing parameters. Please review data"
+                                        }
+                                    },
+                                    "ExistingEmail": {
+                                        "value": {
+                                            "error": "Email is already in use"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Default user role not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                     "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        } 
+                                     }
+                                },
+                                "examples": {
+                                    "Internal error": {
+                                        "value": {
+                                            "error": "Internal server error"
+                                        }
+                                    },
+                                    "UserRoleNotFound": {
+                                        "value": {
+                                            "error": "Default user role not found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "tags": ["Users"],
+                "summary": "Login to an existing account",
+                "description": "Authenticates a user and returns a JWT token valid for 24 hours",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "EmailAddress",
+                                    "Password"
+                                ],
+                                "properties": {
+                                    "EmailAddress": {
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    },
+                                    "Password": {
+                                        "type": "string",
+                                        "example": "TestPassword123"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "description": "JWT auth token"
+                                        },
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                                                },
+                                                "username": {
+                                                    "type": "string",
+                                                    "example": "TestUser"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "test@example.com"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "user"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email and password are required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Email and password are required"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid email or password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid email or password"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Account is not active",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Account is not active"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "User role not found, JWT secret is not configured or internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "RoleNotFound": {
+                                        "value": {
+                                            "error": "User role was not found"
+                                        }
+                                    },
+                                    "JWTtokenError": {
+                                        "value": {
+                                            "error": "JWT secret is not configured"
+                                        }
+                                    },
+                                    "InternalError": {
+                                        "value": {
+                                            "error": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }               
             }
         }
     }

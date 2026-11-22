@@ -24,7 +24,7 @@ const UserController = {
 
             const credential = await db.credential.findOne({ where: {UserType: "user"} })
             if (!credential) {
-                return res.status(404).send({ error: "Default user role not found"})
+                return res.status(500).send({ error: "Default user role not found"})
             }
 
             const hashedPassword = await bcrypt.hash(req.body.Password, 10);
