@@ -44,6 +44,21 @@ const AdminController = {
 
             return res.status(500).send({error: `Failed to update recipe status`})
         }
+    },
+
+    async getAllUsers(req: express.Request, res: express.Response) {
+        try {
+            const users = await db.users.findAll({
+                attributes: {
+                    exclude: ["PasswordHash"]
+                }
+            })
+
+            return res.status(200).json(users)
+        }   
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
     }
 }
 
