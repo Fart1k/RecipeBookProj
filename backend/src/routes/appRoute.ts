@@ -68,4 +68,7 @@ export default (app: express.Application): void => {
   
   app.route("/admin/recipes")
     .get(authenticateToken, isAdmin, AdminController.getAllRecipes)
+
+  app.route("admin/recipes/:ID")
+    .delete(authenticateToken, isAdmin, AdminController.deleteRecipe)
 };

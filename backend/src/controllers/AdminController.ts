@@ -27,16 +27,16 @@ const AdminController = {
 
     async approveRecipe(req: express.Request, res: express.Response) {
         try {
-            const recipeID: string = req.params.ID as string
-            const recipe = await db.recipes.findByPk(recipeID)
+            const recipeId: string = req.params.ID as string
+            const recipe = await db.recipes.findByPk(recipeId)
 
             if(!recipe) {
-                return res.status(404).send({error: `Recipe with this ID was not found: ${recipeID}`})
+                return res.status(404).send({error: `Recipe with this ID was not found: ${recipeId}`})
             }
 
             recipe.Status = true
             await recipe.save()
-            return res.status(200).send({message: `Recipe with ID: ${recipeID} status has changed to TRUE`})
+            return res.status(200).send({message: `Recipe with ID: ${recipeId} status has changed to TRUE`})
         }
         catch (error) {
             return res.status(500).send({error: `Failed to update recipe status`})
@@ -125,6 +125,31 @@ const AdminController = {
         try {
             const recipes = await db.recipes.findAll()
             return res.status(200).json(recipes)
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async deleteRecipe(req: express.Request, res:express.Response) {
+        try {
+            const recipeId = req.params.ID as string
+            const recipe = await db.recipes.findByPk(recipeId)
+
+            if (!recipe) {
+                return res.status(404).json({error: `Recipe with this ID was not found: ${recipeId}`})
+            }
+
+            await db.sequelize.transaction(async (transaction) => {
+                await db.comment.destroy({
+                    where: {RecipeId: recipeId},
+                    transaction
+                })
+
+                await recipe.destroy({transaction})
+            })
+
+            return res.status(204).send()
         }
         catch (error) {
             return res.status(500).json({error: "Internal server error"})
