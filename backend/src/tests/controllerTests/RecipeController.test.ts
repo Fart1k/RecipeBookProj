@@ -309,4 +309,53 @@ describe("RecipeController", () => {
         expect(res.status).toHaveBeenCalledWith(404)
         expect(res.send).toHaveBeenCalledWith({ error: `Recipe with this ID is not found. ${recipeId}` })
     })
+
+    test("ReturnMyRecipe_With200Status", async () => {
+        const userId = "58fe1398-dcd8-11f1-8dc2-901b0eec5991"
+
+        const recipes = [
+            {
+                id: "58fe1398-dcd8-11f1-8dc2-901b0eec5def",
+                RecipeTitle: "Public recipe",
+                Status: true,
+                IsVisibleToOther: true
+            },
+            {
+                id: "58fe1398-dcd8-11f1-8dc2-901b0eec5de2",
+                RecipeTitle: "Private recipe",
+                Status: false,
+                IsVisibleToOther: false
+            }
+        ]
+
+        mocks.findAll.mockResolvedValue(recipes)
+
+        const req = {
+            user: {
+                id: userId,
+                role: "user"
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _RecipeController.getMyRecipes(req, res)
+
+        expect(mocks.findAll).toHaveBeenCalledExactlyOnceWith({
+            where: {UserId: userId},
+            attributes: [
+                "id",
+                "RecipeTitle",
+                "Status",
+                "IsVisibleToOther"
+            ]
+        })
+
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.json).toHaveBeenCalledWith(recipes)
+
+    })
 })
