@@ -2,7 +2,7 @@ import * as express from "express"
 import { db } from "../db.ts"
 
 const AdminController = {
-    async getAllRecipes(req: express.Request, res: express.Response) {
+    async getAllRecipesToApprove(req: express.Request, res: express.Response) {
         try {
             const recipes = await db.recipes.findAll({
                 where: {
@@ -28,7 +28,7 @@ const AdminController = {
     async approveRecipe(req: express.Request, res: express.Response) {
         try {
             const recipeID: string = req.params.ID as string
-            const recipe: any = await db.recipes.findByPk(recipeID)
+            const recipe = await db.recipes.findByPk(recipeID)
 
             if(!recipe) {
                 return res.status(404).send({error: `Recipe with this ID was not found: ${recipeID}`})
@@ -36,13 +36,28 @@ const AdminController = {
 
             recipe.Status = true
             await recipe.save()
-
-            return res.status(200).send({success: `Recipe with ID: ${recipeID} status has changed to TRUE`})
+            return res.status(200).send({message: `Recipe with ID: ${recipeID} status has changed to TRUE`})
         }
         catch (error) {
-            console.log(error)
-
             return res.status(500).send({error: `Failed to update recipe status`})
+        }
+    },
+
+    async rejectRecipe(req: express.Request, res:express.Response) {
+        try {
+            const recipeId = req.params.ID as string
+            const recipe = await db.recipes.findByPk(recipeId)
+
+            if (!recipe) {
+                return res.status(404).json({error: `Recipe with this id was not found: ${recipeId}`})
+            }
+
+            recipe.Status = false
+            await recipe.save()
+            return res.status(200).json({message: "Recipe rejected successfully"})
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
         }
     },
 
@@ -100,6 +115,16 @@ const AdminController = {
             await user.save()
 
             return res.status(200).json({message: "User banned successfully"})
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async getAllRecipes(req: express.Request, res: express.Response) {
+        try {
+            const recipes = await db.recipes.findAll()
+            return res.status(200).json(recipes)
         }
         catch (error) {
             return res.status(500).json({error: "Internal server error"})
