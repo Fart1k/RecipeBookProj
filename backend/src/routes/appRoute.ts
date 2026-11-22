@@ -56,4 +56,7 @@ export default (app: express.Application): void => {
 
   app.route("/admin/users")
     .get(authenticateToken, isAdmin, AdminController.getAllUsers)
+
+  app.route("/admin/users/:ID")
+    .get(authenticateToken, isAdmin, AdminController.getById)
 };

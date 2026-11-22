@@ -59,6 +59,27 @@ const AdminController = {
         catch (error) {
             return res.status(500).json({error: "Internal server error"})
         }
+    },
+
+    async getById(req: express.Request, res: express.Response) {
+        try {
+            const userId = req.params.ID as string
+
+            const user = await db.users.findByPk(userId, {
+                attributes: {
+                    exclude: ["PasswordHash"]
+                }
+            })
+
+            if (!user) {
+                return res.status(404).json({error: `User with this ID was not found: ${userId}`})
+            }
+
+            return res.status(200).json(user)
+        }
+        catch(error) {
+            res.status(500).json({error: "Internal server error"})
+        }
     }
 }
 
