@@ -3,7 +3,7 @@ import type { Recipe, RecipeInput, RecipeSummary } from '../types/Recipe'
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`, options)
+  const response = await fetch(`${API_URL}${endpoint}`, { ...options, credentials: "include" })
 
   if (!response.ok) {
     const message = await response.text()

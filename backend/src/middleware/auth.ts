@@ -1,27 +1,39 @@
-import type { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import type { Request, Response, NextFunction } from "express";
+import JWT from "jsonwebtoken";
+import { db } from "../db.ts";
 
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; 
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthenticated request: Missing token' });
+const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies?.accessToken;
+
+    if (!token || typeof token !== "string") {
+        return res.status(401).send({ error: "You must be logged in" });
     }
-    jwt.verify(token, process.env.JWT_SECRET || 'a7bcb73e7e0540506fc45aed4054c6da5175160c1b772fe52b3747d9e5291469', (err: any, user: any) => {
-        if (err) {
-            return res.status(401).json({ error: 'Invalid or expired token' });
-        }    
-        (req as any).user = user;
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        return res.status(500).send({ error: "JWT secret is not configured" });
+    }
+
+    try {
+        const decoded = JWT.verify(token, secret, { algorithms: ["HS256"] });
+
+        if (typeof decoded === "string" || !decoded.sub) {
+            return res.status(401).send({ error: "Token invalid" });
+        }
+
+        res.locals.userId = String(decoded.sub);
         next();
-    });
+    } catch {
+        return res.status(401).send({ error: "Session is either invalid or expired" });
+    }
 };
 
-export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-    const user = (req as any).user;
-    
-    if (!user || user.role !== "admin") {
+const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    const user = await db.users.findByPk(res.locals.userId);
+    if (!user || user.UserStatus !== "admin") {
         return res.status(403).json({ error: "Access denied. Admin privileges required" });
     }
-    
     next();
 };
+
+export { authenticateToken, isAdmin };

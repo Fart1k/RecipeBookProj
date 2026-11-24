@@ -1,100 +1,56 @@
 import * as express from "express";
 import { db } from "../db.ts";
-import { v7 as uuidv7 } from "uuid";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { v7 as uuidv7 } from "uuid";
 
 const UserController = {
     async create(req: express.Request, res: express.Response) {
-        if (
-            !req.body.Username ||
-            !req.body.Email ||
-            !req.body.Password ||
-            !req.body.UserType
-        ) {
+        const requiredFields = ["UserName", "EmailAddress", "Password", "PasswordConfirmation"];
+        const missingFields = requiredFields.filter(field => !req.body?.[field]);
+
+        if (missingFields.length > 0) {
             return res.status(400).send({
-                error: "Missing parameters, please review data"
+                error: "Missing parameters, please review data",
+                missing: missingFields
             });
         }
 
+        if (typeof req.body.UserName !== "string" ||
+            typeof req.body.EmailAddress !== "string" ||
+            typeof req.body.Password !== "string" ||
+            typeof req.body.PasswordConfirmation !== "string") {
+            return res.status(400).send({ error: "Some or all parameters are invalid" });
+        }
+
+        if (req.body.Password !== req.body.PasswordConfirmation) {
+            return res.status(406).send({ error: "Passwords do not match, please check your info." });
+        }
+
         try {
-        
-            const existingUser = await db.users.findOne({ where: { Email: req.body.Email } });
+            const existingUser = await db.users.findOne({
+                where: { EmailAddress: req.body.EmailAddress }
+            });
+
             if (existingUser) {
-                return res.status(400).send({ error: "Email is already in use" });
+                return res.status(409).send({ error: "Email is already in use" });
             }
 
-            const hashedPassword = await bcrypt.hash(req.body.Password, 10);
-            const userId = uuidv7();
-            const credentialId = uuidv7();
-
-            
-            const newUser = await db.users.create({
-                id: userId,
-                Username: req.body.Username,
-                Email: req.body.Email,
-                PasswordHash: hashedPassword,
-                CredentialId: credentialId
+            const passwordHash = await bcrypt.hash(req.body.Password, 10);
+            const result = await db.users.create({
+                id: uuidv7(),
+                UserName: req.body.UserName,
+                EmailAddress: req.body.EmailAddress,
+                PasswordHash: passwordHash,
+                UserStatus: "unverified"
             });
 
-           
-            await db.credential.create({
-                id: credentialId,
-                Userid: userId,
-                UserType: req.body.UserType 
+            return res.status(201).send({
+                id: result.id,
+                UserName: result.UserName,
+                EmailAddress: result.EmailAddress,
+                UserStatus: result.UserStatus
             });
-
-            return res.status(201).json({
-                message: "User registered successfully",
-                userId: newUser.id,
-                username: newUser.Username
-            });
-        } catch (error) {
-            console.error("Registration error:", error);
-            return res.status(500).send({ error: "Internal server error" });
-        }
-    },
-
-    async login(req: express.Request, res: express.Response) {
-        if (!req.body.Email || !req.body.Password) {
-            return res.status(400).send({
-                error: "Email and password are required"
-            });
-        }
-
-        try {
-            const user = await db.users.findOne({ where: { Email: req.body.Email } });
-            if (!user) {
-                return res.status(401).send({ error: "Invalid email or password" });
-            }
-
-            const isPasswordValid = await bcrypt.compare(req.body.Password, user.PasswordHash);
-            if (!isPasswordValid) {
-                return res.status(401).send({ error: "Invalid email or password" });
-            }
-
-            const credential = await db.credential.findOne({ where: { Userid: user.id } });
-            const userType = credential ? credential.UserType : "User";
-
-        
-            const token = jwt.sign(
-                { id: user.id, email: user.Email, role: userType },
-                process.env.JWT_SECRET || "your_jwt_secret_key",
-                { expiresIn: "24h" }
-            );
-
-            return res.status(200).send({
-                message: "Login successful",
-                token,
-                user: {
-                    id: user.id,
-                    username: user.Username,
-                    email: user.Email,
-                    role: userType
-                }
-            });
-        } catch (error) {
-            console.error("Login error:", error);
+        } catch {
             return res.status(500).send({ error: "Internal server error" });
         }
     }

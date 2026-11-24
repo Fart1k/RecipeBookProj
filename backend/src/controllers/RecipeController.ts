@@ -11,7 +11,7 @@ const RecipeController = {
             !req.body.RecipeTitle ||
             !req.body.Instructions ||
             !req.body.Ingredients ||
-            req.body.IsVisibleToOther
+            typeof req.body.IsVisibleToOther !== "boolean"
         ) {
             return res.status(400).send({
                 error: "Missing parameters, please review data"
@@ -34,9 +34,7 @@ const RecipeController = {
 
    async getAll(req: express.Request, res: express.Response) {
         const { search, category } = req.query;
-        const whereClause: any = {
-            Status: true
-        };
+        const whereClause: any = {};
         if (search) {
             whereClause.RecipeTitle = {
                 [Op.iLike]: `%${search}%`
