@@ -82,20 +82,6 @@ const UserRecipesCollectionsController = {
         await collectionToBeDeleted.destroy()
         return res.status(204).send({error: "No content. "})
     },
-    async getMyCollection(req: express.Request, res: express.Response) {
-        const userId = (req as any).user.id
-
-        const collections = await db.userRecipesCollection.findAll({
-            where: {UserId: userId},
-            attributes: [
-                "id",
-                "CollectionName",
-                "CollectionDescription"
-            ]
-        })
-
-        return res.status(200).json(collections)
-    },
     async getCollection(req: express.Request, res: express.Response) {
         let collectionId: string = req.params.ID as string
 
