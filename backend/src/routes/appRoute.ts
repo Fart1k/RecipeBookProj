@@ -34,12 +34,16 @@ export default (app: express.Application): void => {
   app.route("/userrecipescollections/")
     .post(authenticateToken, UserRecipesCollectionController.create)
     .get(UserRecipesCollectionController.getAll)
-  
+    
+  app.route("/userrecipescollections/mine")
+    .get(authenticateToken, UserRecipesCollectionController.getMyCollection)
+
   app.route("/userrecipescollections/:ID")
     .get(UserRecipesCollectionController.getById)
     .put(authenticateToken, UserRecipesCollectionController.modifyById)
     .delete(authenticateToken, UserRecipesCollectionController.deleteById)
 
+  
   //Comments routes
 
   app.route("/recipes/:ID/comments")
