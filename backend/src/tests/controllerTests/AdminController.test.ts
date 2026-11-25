@@ -168,5 +168,81 @@ describe("AdminController", () => {
         expect(res.send).toHaveBeenCalledWith({error: "Failed to update recipe status"})
     })
 
+    // See test on korrektne, kui kontroller ei leia retsept ja tagastab 404 statuskoodi
+    test("RejectRecipe_With404status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063wwc"
+        mocks.findByPk.mockResolvedValue(null)
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.rejectRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(res.status).toHaveBeenCalledWith(404)
+        expect(res.json).toHaveBeenCalledWith({error: `Recipe with this id was not found: ${recipeId}`})
+    })
+
+    // See test on korrektne, kui retsepti staatus on muudetud ja kontroller tagastab 200 statuskoodi
+    test("RejectRecipe_With200status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+        
+        const recipe = {
+            id: recipeId,
+            Status: false,
+            save: vi.fn().mockResolvedValue(undefined)
+        }
+        mocks.findByPk.mockResolvedValue(recipe)
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.rejectRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(recipe.Status).toBe(false)
+        expect(recipe.save).toHaveBeenCalledOnce()
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.json).toHaveBeenCalledWith({message: "Recipe rejected successfully"})
+    })
     
+    // See test on korrektne, kui kontroller tagastab 500 statuskoodi, sest juhtus mingi API/andmebaasi viga
+    test("RejectRecipe_With500status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+
+        mocks.findByPk.mockRejectedValue(new Error("Internal server error"))
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.rejectRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
+    })
 })
