@@ -3,7 +3,8 @@ import type { Request, Response } from "express";
 
 const mocks = vi.hoisted(() => ({
     findAll: vi.fn(),
-    findByPk: vi.fn()
+    findByPk: vi.fn(),
+    findAllUsers: vi.fn()
 }))
 
 vi.mock("../../db.ts", () => ({
@@ -11,6 +12,9 @@ vi.mock("../../db.ts", () => ({
         recipes: {
             findAll: mocks.findAll,
             findByPk: mocks.findByPk
+        },
+        users: {
+            findAll: mocks.findAllUsers
         }
     }
 }))
@@ -244,5 +248,44 @@ describe("AdminController", () => {
         expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
         expect(res.status).toHaveBeenCalledWith(500)
         expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
+    })
+
+    test("getAllUsers_With200status", async () => {
+        const users = [
+            {
+                id: "01a1c462-5d99-771d-99d3-ae6307063bfc",
+                UserName: "username",
+                EmailAddress: "test@example.com"
+            },
+            {
+                id: "01a1c462-5d99-771d-99d3-ae6307063awd",
+                UserName: "username1",
+                EmailAddress: "test2@example.com"
+            }
+        ]
+
+        mocks.findAllUsers.mockResolvedValue(users)
+
+        const req = {} as Request
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.getAllUsers(req, res)
+
+        expect(mocks.findAllUsers).toHaveBeenCalledExactlyOnceWith({
+            attributes: {
+                exclude: ["PasswordHash"]
+            }
+        })
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.json).toHaveBeenCalledWith(users)
+    })
+
+    test("getAllUsers_With500status", async () => {
+        mocks.findAllUsers.mockRejectedValue(new Error("Internal server error"))
+
+        
     })
 })
