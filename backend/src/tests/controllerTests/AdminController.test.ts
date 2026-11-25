@@ -2,13 +2,15 @@ import { describe, expect, vi, test, beforeEach } from "vitest";
 import type { Request, Response } from "express";
 
 const mocks = vi.hoisted(() => ({
-    findAll: vi.fn()
+    findAll: vi.fn(),
+    findByPk: vi.fn()
 }))
 
 vi.mock("../../db.ts", () => ({
     db: {
         recipes: {
-            findAll: mocks.findAll
+            findAll: mocks.findAll,
+            findByPk: mocks.findByPk
         }
     }
 }))
@@ -87,4 +89,84 @@ describe("AdminController", () => {
             error: "Failed to get recipes"
         })
     })
+
+    // See test on korrektne, kui kontroller ei leia retsept ja tagastab 404 statuskoodi
+    test("ApproveRecipe_With404status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+        mocks.findByPk.mockResolvedValue(null)
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.approveRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(res.status).toHaveBeenCalledWith(404)
+        expect(res.send).toHaveBeenCalledWith({error: `Recipe with this ID was not found: ${recipeId}`})
+    })
+
+    // See test on korrektne, kui retsepti staatus on muudetud ja kontroller tagastab 200 statuskoodi
+    test("ApproveRecipe_With200status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+
+        const recipe = {
+            id: "01a1c462-5d99-771d-99d3-ae6307063bfc",
+            Status: false,
+            save: vi.fn().mockResolvedValue(undefined)
+        }
+        mocks.findByPk.mockResolvedValue(recipe)
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.approveRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(recipe.Status).toBe(true)
+        expect(recipe.save).toHaveBeenCalledOnce()
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.send).toHaveBeenCalledWith({message: `Recipe with ID: ${recipeId} status has changed to TRUE`})
+    })
+
+    // See test on korrektne, kui kontroller tagastab 500 statuskoodi, sest juhtus mingi API/andmebaasi viga
+    test("ApproveRecipe_With500status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+
+        mocks.findByPk.mockRejectedValue(new Error("Failed to update recipe status"))
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.approveRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.send).toHaveBeenCalledWith({error: "Failed to update recipe status"})
+    })
+
+    
 })
