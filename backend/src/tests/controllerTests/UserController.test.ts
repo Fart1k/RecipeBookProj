@@ -33,6 +33,7 @@ describe("UserController", () => {
         vi.clearAllMocks()
     })
 
+    // See test on korrektne, kui controller tagastab 201 statuskoodi, mis tähendab, et uus kasutaja on registreeritud
     test("Register_With201status", async () => {
         const userData = {
             UserName: "TestUser",
@@ -89,6 +90,7 @@ describe("UserController", () => {
         expect(res.json).toHaveBeenCalledWith(resMessage)
     })
 
+    // See test on korrektne, kui req.body sees puudub üks vajalikkust parametritest ja kontroller tagastab statuskoodi 400. 
     test("Register_MissingParameters_With400status", async () => {
         const req = {
             body: {
@@ -111,6 +113,7 @@ describe("UserController", () => {
         expect(mocks.create).not.toHaveBeenCalled()
     })
 
+    // See test on korrektne, kui email mida külaline sistestas on juba olemas andmebaasis ja kontroller tagastab statuskoodi 400.
     test("Register_ExistingEmail_With400status", async () => {
         const userData = {
             UserName: "TestUser",
@@ -143,6 +146,7 @@ describe("UserController", () => {
         expect(mocks.create).not.toHaveBeenCalled()
     })
 
+    // See test on korrektne, kui külaline sisestab kas ainult email või ainult parooli ja kontroller tagatab statuskoodi 400.
     test("Login_MissingParametes_With400tatus", async () => {
         const req = {
             body: {
@@ -164,6 +168,7 @@ describe("UserController", () => {
         expect(mocks.login).not.toHaveBeenCalled()
     })
 
+    // See test on korrektne, kui emaili, mida külaline sisestas, ei leitud andmebaasis ja kontroller tagastab statuskoodi 401.
     test("Login_UserNotFound_With401status", async () => {
         const userData = {
             EmailAddress: "test@example.com",
@@ -188,6 +193,7 @@ describe("UserController", () => {
         expect(res.send).toHaveBeenCalledWith({error: "User not found"})
     })
 
+    // See test on korrektne, kui külaline sisestab vale parooli ja kontroller tagastab statuskoodi 401.
     test("Login_InvalidPassword_With401status", async () => {
         const userData = {
             EmailAddress: "test@example.com",
@@ -220,6 +226,7 @@ describe("UserController", () => {
         expect(res.send).toHaveBeenCalledWith({error: "Invalid password"})
     })
 
+    // See test on korrektne, kui UserStatus ei ole "verified" ja kontroller tagastab statuskoodi 403
     test("Login_UnverifiedAccount_With403status", async () => {
         const userData = {
             EmailAddress: "test@example.com",
@@ -252,6 +259,7 @@ describe("UserController", () => {
         expect(res.send).toHaveBeenCalledWith({error: "Account is not active"})
     })
 
+    // See test on korrektne, kui kontroller ei leia "user" rolli andmebaasis ja tagastab statuskoodi 500
     test("Login_RoleNotFound_With500status", async () => {
         const userData = {
             EmailAddress: "test@example.com",
@@ -286,6 +294,7 @@ describe("UserController", () => {
         expect(res.send).toHaveBeenCalledWith({error: "User role was not found"})
     })
 
+    // See test on korrektne, kui .env failis ei ole seadistatud JWT_SECRET ja auth middleware tagastab statuskoodi 500
     test("Login_JWTsecretNotConfigured_With500status", async () => {
         const userData = {
             EmailAddress: "test@example.com",
@@ -327,6 +336,7 @@ describe("UserController", () => {
         expect(res.send).toHaveBeenCalledWith({error: "JWT secret is not configured"})
     })
 
+    // See test on korrektne, kui kõik vajalikud andmed on olemas ja kontroller tagastab statuskoodi 200
     test("Login_With200status", async () => {
         const userData = {
             EmailAddress: "test@example.com",
