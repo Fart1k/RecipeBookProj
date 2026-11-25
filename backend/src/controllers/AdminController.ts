@@ -2,7 +2,7 @@ import * as express from "express"
 import { db } from "../db.ts"
 
 const AdminController = {
-    async getAllRecipes(req: express.Request, res: express.Response) {
+    async getAllRecipesToApprove(req: express.Request, res: express.Response) {
         try {
             const recipes = await db.recipes.findAll({
                 where: {
@@ -27,22 +27,184 @@ const AdminController = {
 
     async approveRecipe(req: express.Request, res: express.Response) {
         try {
-            const recipeID: string = req.params.ID as string
-            const recipe: any = await db.recipes.findByPk(recipeID)
+            const recipeId: string = req.params.ID as string
+            const recipe = await db.recipes.findByPk(recipeId)
 
             if(!recipe) {
-                return res.status(404).send({error: `Recipe with this ID was not found: ${recipeID}`})
+                return res.status(404).send({error: `Recipe with this ID was not found: ${recipeId}`})
             }
 
             recipe.Status = true
             await recipe.save()
-
-            return res.status(200).send({success: `Recipe with ID: ${recipeID} status has changed to TRUE`})
+            return res.status(200).send({message: `Recipe with ID: ${recipeId} status has changed to TRUE`})
         }
         catch (error) {
-            console.log(error)
-
             return res.status(500).send({error: `Failed to update recipe status`})
+        }
+    },
+
+    async rejectRecipe(req: express.Request, res:express.Response) {
+        try {
+            const recipeId = req.params.ID as string
+            const recipe = await db.recipes.findByPk(recipeId)
+
+            if (!recipe) {
+                return res.status(404).json({error: `Recipe with this id was not found: ${recipeId}`})
+            }
+
+            recipe.Status = false
+            await recipe.save()
+            return res.status(200).json({message: "Recipe rejected successfully"})
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async getAllUsers(req: express.Request, res: express.Response) {
+        try {
+            const users = await db.users.findAll({
+                attributes: {
+                    exclude: ["PasswordHash"]
+                }
+            })
+
+            return res.status(200).json(users)
+        }   
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async getById(req: express.Request, res: express.Response) {
+        try {
+            const userId = req.params.ID as string
+
+            const user = await db.users.findByPk(userId, {
+                attributes: {
+                    exclude: ["PasswordHash"]
+                }
+            })
+
+            if (!user) {
+                return res.status(404).json({error: `User with this ID was not found: ${userId}`})
+            }
+
+            return res.status(200).json(user)
+        }
+        catch(error) {
+            res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async banUser(req: express.Request, res: express.Response) {
+        try {
+            const userId = req.params.ID as string
+
+            if (userId === (req as any).user.id) {
+                return res.status(400).json({error: "You cannot ban yourself"})
+            }
+
+            const user = await db.users.findByPk(userId)
+
+            if(!user) {
+                return res.status(404).json({error: `User with this ID was not found: ${userId}`})
+            }
+
+            user.UserStatus = "banned"
+            await user.save()
+
+            return res.status(200).json({message: "User banned successfully"})
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async getAllRecipes(req: express.Request, res: express.Response) {
+        try {
+            const recipes = await db.recipes.findAll()
+            return res.status(200).json(recipes)
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async deleteRecipe(req: express.Request, res:express.Response) {
+        try {
+            const recipeId = req.params.ID as string
+            const recipe = await db.recipes.findByPk(recipeId)
+
+            if (!recipe) {
+                return res.status(404).json({error: `Recipe with this ID was not found: ${recipeId}`})
+            }
+
+            await db.sequelize.transaction(async (transaction) => {
+                await db.comment.destroy({
+                    where: {RecipeId: recipeId},
+                    transaction
+                })
+
+                await recipe.destroy({transaction})
+            })
+
+            return res.status(204).send()
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+
+    async deleteComment(req: express.Request, res:express.Response) {
+        try {
+            const commentId = req.params.ID as string
+
+            const comment = await db.comment.findByPk(commentId)
+            if (!comment) {
+                return res.status(404).json({error: `Comment with this ID was not found: ${commentId}`})
+            }
+
+            const recipe = await db.recipes.findByPk(comment.RecipeId)
+            if (!recipe) {
+                return res.status(404).json({error: `Recipe not found`})
+            }
+
+            await db.sequelize.transaction(async (transaction) => {
+                await comment.destroy({transaction})
+
+                const comments = await db.comment.findAll({
+                    where: {RecipeId: comment.RecipeId},
+                    transaction
+                })
+
+                const ratings = comments
+                                    .map(comment => comment.Rating)
+                                    .filter((rating): rating is number => rating != null)
+
+                let sum = 0
+                let count = 0
+                for(const comment of comments) {
+                    if (comment.Rating != null) {
+                        sum = sum + comment.Rating
+                        count++
+                    }
+                }
+
+                let averageRating = null
+                if (count > 0) {
+                    averageRating = Number((sum / count).toFixed(1))
+                }
+
+                await recipe.update(
+                    {RatingOverall: averageRating}, 
+                    {transaction}
+                )
+            })
+            return res.status(204).send()
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
         }
     }
 }

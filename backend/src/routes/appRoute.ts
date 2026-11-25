@@ -34,11 +34,15 @@ export default (app: express.Application): void => {
   app.route("/userrecipescollections/")
     .post(authenticateToken, UserRecipesCollectionController.create)
     .get(UserRecipesCollectionController.getAll)
-  
+    
+  app.route("/userrecipescollections/mine")
+    .get(authenticateToken, UserRecipesCollectionController.getMyCollection)
+
   app.route("/userrecipescollections/:ID")
     .get(UserRecipesCollectionController.getById)
     .put(authenticateToken, UserRecipesCollectionController.modifyById)
     .delete(authenticateToken, UserRecipesCollectionController.deleteById)
+
 
   //Comments routes
 
@@ -49,8 +53,29 @@ export default (app: express.Application): void => {
   //Admin routes
 
   app.route("/admin/recipestoapprove")
-    .get(authenticateToken, isAdmin, AdminController.getAllRecipes);
+    .get(authenticateToken, isAdmin, AdminController.getAllRecipesToApprove);
   
-  app.route("/admin/recipestoapprove/:ID")
+  app.route("/admin/approve/:ID")
     .put(authenticateToken, isAdmin, AdminController.approveRecipe);
+
+  app.route("/admin/reject/:ID")
+    .put(authenticateToken, isAdmin, AdminController.rejectRecipe)
+
+  app.route("/admin/users")
+    .get(authenticateToken, isAdmin, AdminController.getAllUsers)
+
+  app.route("/admin/users/:ID")
+    .get(authenticateToken, isAdmin, AdminController.getById)
+
+  app.route("/admin/users/:ID/ban")
+    .put(authenticateToken, isAdmin, AdminController.banUser)
+  
+  app.route("/admin/recipes")
+    .get(authenticateToken, isAdmin, AdminController.getAllRecipes)
+
+  app.route("/admin/recipes/:ID")
+    .delete(authenticateToken, isAdmin, AdminController.deleteRecipe)
+
+  app.route("/admin/comments/:ID")
+    .delete(authenticateToken, isAdmin, AdminController.deleteComment)
 };
