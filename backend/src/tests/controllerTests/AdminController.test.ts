@@ -20,7 +20,7 @@ describe("AdminController", () => {
         vi.clearAllMocks()
     })
 
-    // See test on korrektne, kui kontroller tagastab 200 statuskoodi, kui admin saab näha ainult need retsiptid, mis ei ole veel kinnitud.
+    // See test on korrektne, kui kontroller tagastab 200 statuskoodi ja admin saab näha ainult need retsiptid, mis ei ole veel kinnitud.
     test("GetAllUnapprovedRecipes_With200status", async () => {
         const recipes = [
             {
@@ -66,5 +66,25 @@ describe("AdminController", () => {
         ])
     })
 
-    
+    // See test on korrektne, kui kontroller tagastab 500 statuskoodi, sest ei saanud leida ühtegi retsepti serveri probleemi seosega
+    test("GetAllUnapprovedRecipes_With500status", async () => {
+        mocks.findAll.mockRejectedValue(new Error("Failed to get recipes"))
+
+        const req = {} as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.getAllRecipesToApprove(req, res)
+
+        expect(mocks.findAll).toHaveBeenCalledExactlyOnceWith({where: {
+            Status: false
+        }})
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.send).toHaveBeenCalledWith({
+            error: "Failed to get recipes"
+        })
+    })
 })
