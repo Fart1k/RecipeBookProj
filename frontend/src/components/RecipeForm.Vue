@@ -63,26 +63,61 @@ watch(() => props.recipeId, loadRecipe, { immediate: true })
 </script>
 
 <template>
-  <section>
-    <h2>{{ recipeId ? 'Edit recipe' : 'Create recipe' }}</h2>
-    <form @submit.prevent="saveRecipe">
-      <label for="recipe-title">Recipe title</label>
-      <input id="recipe-title" v-model.trim="form.RecipeTitle" required />
-
-      <label for="recipe-ingredients">Ingredients</label>
-      <textarea id="recipe-ingredients" v-model.trim="form.Ingredients" required rows="4" />
-
-      <label for="recipe-instructions">Instructions</label>
-      <textarea id="recipe-instructions" v-model.trim="form.Instructions" required rows="6" />
-
-      <label for="recipe-image">Image URL</label>
-      <input id="recipe-image" v-model.trim="form.ImageUrl" type="url" />
-
-      <p v-if="error" role="alert">{{ error }}</p>
-      <div class="actions">
-        <button type="submit" :disabled="saving">{{ saving ? 'Saving' : 'Save recipe' }}</button>
-        <button type="button" class="secondary" @click="emit('cancel')">Cancel</button>
+  <div class="window" style="max-width: 600px; margin: 24px auto;">
+    <div class="title-bar">
+      <div class="title-bar-text">{{ recipeId ? 'Edit Recipe' : 'Create Recipe' }}</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize"></button>
+        <button aria-label="Maximize"></button>
+        <button aria-label="Close" @click="emit('cancel')"></button>
       </div>
-    </form>
-  </section>
+    </div>
+
+    <div class="window-body">
+      <form @submit.prevent="saveRecipe">
+        <fieldset>
+          <legend>Recipe Details</legend>
+
+          <div class="field-row-stacked" style="margin-bottom: 12px;">
+            <label for="recipe-title">Recipe title</label>
+            <input id="recipe-title" v-model.trim="form.RecipeTitle" required />
+          </div>
+
+          <div class="field-row-stacked" style="margin-bottom: 12px;">
+            <label for="recipe-ingredients">Ingredients</label>
+            <textarea id="recipe-ingredients" v-model.trim="form.Ingredients" required rows="4"></textarea>
+          </div>
+
+          <div class="field-row-stacked" style="margin-bottom: 12px;">
+            <label for="recipe-instructions">Instructions</label>
+            <textarea id="recipe-instructions" v-model.trim="form.Instructions" required rows="6"></textarea>
+          </div>
+
+          <div class="field-row-stacked" style="margin-bottom: 12px;">
+            <label for="recipe-image">Image URL</label>
+            <input id="recipe-image" v-model.trim="form.ImageUrl" type="url" />
+          </div>
+        </fieldset>
+
+        <p v-if="error" role="alert" class="error-box">{{ error }}</p>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+          <button type="submit" :disabled="saving" class="default">
+            {{ saving ? 'Saving...' : 'Save recipe' }}
+          </button>
+          <button type="button" @click="emit('cancel')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.error-box {
+    background: #ffe6e6;
+    border: 1px solid red;
+    padding: 8px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+}
+</style>

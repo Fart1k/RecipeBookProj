@@ -5,9 +5,42 @@
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RecipeBook</title>
+    <link rel="stylesheet" href="https://unpkg.com/7.css">
+    <link rel="stylesheet" href="styles.css">
+    
   </head>
   <body>
-    <div id="app"></div>
+
+    <div class="background">
+      <div class="window glass active" style="max-width: 100%", style="height: 500;">
+        <div class="title-bar" style="background-attachment: local;">
+          <div class="title-bar-text">A glass window frame with local background-attachment</div>
+          <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="window-body has-space">
+              <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
   </body>
 </html>
+
+<style>
+  .background {
+    background-image: url('./background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    padding: 24px;
+}
+</style>
