@@ -56,24 +56,6 @@ With `PORT=8080`, the backend should be reachable at:
 
 On startup, Sequelize creates or adjusts the application's tables when `SYNC=true`. Keep the server running while testing requests; stop it with **Ctrl+C**.
 
-## Create the required user role
-
-**Important:** registration depends on an existing record with `UserType = 'user'` in the `Credentials` table. The project does not currently have an automatic role seeder.
-
-After starting the backend once with `SYNC=true`, execute this SQL against your RecipeBook database:
-
-```sql
-INSERT INTO `Credentials` (`id`, `UserType`, `createdAt`, `updatedAt`) VALUES
-('12b75ce5-e7f9-11f1-82da-901b0eec5991', 'user', NOW(), NOW());
-```
-
-For later administrator testing, also create the admin role:
-
-```sql
-INSERT INTO `Credentials` (`id`, `UserType`, `createdAt`, `updatedAt`) VALUES
-('12b75ce5-e7f9-11f1-82da-901b0eec5991', 'admin', NOW(), NOW());
-```
-
 ## Test registration and login
 
 The simplest way to test authentication is through Postman.
