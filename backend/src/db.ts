@@ -1,4 +1,5 @@
 import { Sequelize, DataTypes } from "sequelize";
+import { v7 as uuidv7 } from "uuid";
 
 import RecipeModel from "./models/Recipe.ts";
 import UserModel from "./models/User.ts";
@@ -77,6 +78,23 @@ const db = {
 
 const sync = async(): Promise<void> => {
     await sequelize.sync({ alter: true })
+
+    await db.credential.findOrCreate({
+        where: {UserType: "user"},
+        defaults: {
+            id: uuidv7(),
+            UserType: "user"
+        }
+    })
+
+    await db.credential.findOrCreate({
+        where: {UserType: "admin"},
+        defaults: {
+            id: uuidv7(),
+            UserType: "admin"
+        }
+    })
+
     console.log("DB is synced")
 };
 
