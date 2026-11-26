@@ -1,40 +1,177 @@
 # RecipeBookProj
-# ERD
-<img width="760" height="683" alt="{34713D54-2A28-4A28-ABEC-D8C41805FB14}" src="https://github.com/user-attachments/assets/b0ec8c5d-0d53-43f7-a1db-645b494f5dc5" />
+## Clone and install
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Fart1k/RecipeBookProj.git
+cd RecipeBookProj
+```
+
+Install backend dependencies from the repository root:
+
+```bash
+npm install
+```
 
 
+## Configure environment variables
 
-# Setup
+### 1. Create a `.env` file
 
-https://github.com/users/Fart1k/projects/6 --- Projekt
+Create a file called `.env` in the repository root:
 
-Arendaja keskkonna seadistamine ja projekti käivitamine
+```dotenv
+DB_NAME=recipebook
+DB_USERNAME=root
+DB_PASSWORD=YOUR_MARIADB_PASSWORD
+DB_HOSTNAME=127.0.0.1
+PORT=8080
+SYNC=true
+JWT_SECRET=REPLACE_WITH_A_RANDOM_SECRET
+```
 
-1 Klooni repositoorium
+Replace `root` and the password with your actual MariaDB credentials.
 
-2 Ava kaust VS Code-iga või muu IDE-ga
+**Generate a secure `JWT_SECRET`:**
 
-3 Ava terminal (cmd) ja mine backend kausta
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
 
-4 installi Node-i paketid: npm i
+Copy the complete generated value after `JWT_SECRET=`. A sample file named `.env.expample` exists in the repository, but its `JWT_SECRET` line is an instruction, not a usable secret. Replace it rather than copying it literally.
 
-5 Käivita arendus: npm run dev
+## Start the backend
 
-6 Lõpetamiseks käsureal klahvikombinatsioon: CTRL+C
+From the repository root:
 
-Produktsiooni käivitamine
-1 backend kaustas
-2 Konstrueeri produktsiooni kood käsuga: npm run build
-3 Käivita toodangu kood käsuga: npm run start
+```bash
+npm run dev
+```
+
+With `PORT=8080`, the backend should be reachable at:
+
+- API base URL: **http://localhost:8080**
+- Swagger UI: **http://localhost:8080/docs**
+
+On startup, Sequelize creates or adjusts the application's tables when `SYNC=true`. Keep the server running while testing requests; stop it with **Ctrl+C**.
+
+## Create the required user role
+
+**Important:** registration depends on an existing record with `UserType = 'user'` in the `Credentials` table. The project does not currently have an automatic role seeder.
+
+After starting the backend once with `SYNC=true`, execute this SQL against your RecipeBook database:
+
+```sql
+INSERT INTO `Credentials` (`id`, `UserType`, `createdAt`, `updatedAt`) VALUES
+('12b75ce5-e7f9-11f1-82da-901b0eec5991', 'user', NOW(), NOW());
+```
+
+For later administrator testing, also create the admin role:
+
+```sql
+INSERT INTO `Credentials` (`id`, `UserType`, `createdAt`, `updatedAt`) VALUES
+('12b75ce5-e7f9-11f1-82da-901b0eec5991', 'admin', NOW(), NOW());
+```
+
+## Test registration and login
+
+The simplest way to test authentication is through Postman.
+
+### 1. Register a user
+
+**POST** `http://localhost:8080/users/register`
+
+Body:
+
+```json
+{
+  "UserName": "DemoUser",
+  "EmailAddress": "demo@example.com",
+  "Password": "DemoPassword123!"
+}
+```
+
+Expected: **201 Created**, with a response similar to:
+
+```json
+{
+  "message": "User registered successfully",
+  "userId": "<generated-user-uuid>",
+  "username": "DemoUser"
+}
+```
+
+### 2. Log in
+
+**POST** `http://localhost:8080/users/login`
+
+Body:
+
+```json
+{
+  "EmailAddress": "demo@example.com",
+  "Password": "DemoPassword123!"
+}
+```
+
+Expected: **200 OK**. The response includes a `token` and a `user` object:
+
+```json
+{
+  "message": "Login successful",
+  "token": "<your-JWT-token>",
+  "user": {
+    "id": "<generated-user-uuid>",
+    "username": "DemoUser",
+    "email": "demo@example.com",
+    "role": "user"
+  }
+}
+```
+
+Copy the `token` value. Tokens currently expire after 24 hours. Changing `JWT_SECRET` invalidates tokens signed with the old value.
+
+## Test an authenticated request
+
+Use the token returned by `/users/login`.
+
+In **Postman**:
+
+1. Create a **GET** request to `http://localhost:8080/recipes/mine`.
+2. Go to **Authorization -> Bearer Token**.
+3. Paste only the token.
+4. Click Send.
+
+Expected: **200 OK** with an array of recipes belonging to your user or an empty array if user have no recipes.
 
 
-# Apitomy OpenAPI Editor
+If you omit the token, the app returns **401**. If you provide an expired/invalid token, the app also returns **401**. A valid token belonging to a banned account is rejected with **403**.
 
-parem klõps oma repo peale
-vali "ava terminal" 
+### Test protected recipe creation
 
-1 git clone https://github.com/Apitomy/apitomy-openapi-editor.git
-2 cd apitomy-openapi-editor
-3 cmd
-4 npm run test-app:install
-5 npm run test-app:dev
+**POST** `http://localhost:8080/recipes` with the same Bearer token and this JSON body:
+
+```json
+{
+  "RecipeTitle": "Simple Pasta",
+  "Ingredients": "Pasta, water, salt",
+  "Instructions": "Boil the pasta and serve.",
+  "IsVisibleToOther": true
+}
+```
+
+Expected: **201 Created**. Newly created recipes have `Status = false`, so they will **not** appear in the public `GET /recipes` list until approved by an administrator. You can still see your own recipe in `GET /recipes/mine`.
+
+### Test using Swagger UI
+
+Visit **http://localhost:8080/docs**. For protected endpoints, click **Authorize** and paste the JWT token.
+
+### Admin functions
+
+For testing admin functions you need to create Admin user, login with it and get an admin token.
+
+## Links
+
+- [GitHub Projects](https://github.com/users/Fart1k/projects/6)
+- [Project ERD](https://github.com/user-attachments/assets/5bf0c8ef-7a13-45e0-9aaa-574bd1e6b2a3)

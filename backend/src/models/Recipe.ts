@@ -1,7 +1,5 @@
-import type { UUID } from "node:crypto";
 import { DataTypes, Model, UUIDV4 } from "sequelize"
 import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
-import type { Json } from "sequelize/lib/utils";
 
 export class Recipe extends Model<InferAttributes<Recipe>, InferCreationAttributes<Recipe>> {
     declare id: string
@@ -10,6 +8,7 @@ export class Recipe extends Model<InferAttributes<Recipe>, InferCreationAttribut
     declare Ingredients: string
     declare IsVisibleToOther: boolean
     declare Status: boolean
+    declare UserId: string | null
 
     declare ImageUrl: CreationOptional<string | null>
     declare RatingOverall: CreationOptional<number | null>
@@ -51,6 +50,10 @@ export default function RecipeModel(
             },
             Status: {
                 type: DataTypes.BOOLEAN
+            },
+            UserId: {
+                type: DataTypes.UUID,
+                allowNull: false
             },
             createdAt: DataTypes.DATE,
             updatedAt: DataTypes.DATE,
