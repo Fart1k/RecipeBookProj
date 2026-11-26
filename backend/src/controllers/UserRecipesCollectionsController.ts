@@ -2,7 +2,7 @@ import * as express from "express"
 import { db } from "../db.ts"
 import Utilities from "./Utilities.ts"
 import { v7 as uuidv7 } from "uuid"
-
+import { Op } from "sequelize"
 const UserRecipesCollectionsController = {
     async create(req: express.Request, res: express.Response) {
         const userId = (req as any).user?.id
@@ -149,12 +149,42 @@ const UserRecipesCollectionsController = {
             return res.status(500).json({error: "Internal server error"})
         }
     },
+    async getRecipes(req: express.Request, res: express.Response) {
+        try {
+            const collectionId = req.params.ID as string
+            const collection = await db.userRecipesCollection.findByPk(collectionId)
+            if (!collection) {
+                return res.status(404).json({error: `Collection with that ID was not found: ${collectionId}`})
+            }
+
+            const recipes = await db.recipes.findAll({
+                attributes: ["id", "RecipeTitle"],
+                where: {
+                    id: {
+                        [Op.in]: collection.RecipeIds
+                    },
+                    [Op.or]:[
+                        {
+                            Status: true,
+                            IsVisibleToOther: true
+                        }
+                    ]
+                }
+            })
+
+            return res.status(200).json(recipes)
+        }
+        catch (error) {
+            console.error(error)
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
     async getCollection(req: express.Request, res: express.Response) {
         let collectionId: string = req.params.ID as string
 
         const collection = await db.userRecipesCollection.findByPk(collectionId)
         if (!collection) {
-            res.status(404).send({error: `Recipe with this ID is not found ${collectionId}`})
+            res.status(404).send({error: `Recipe collection with this ID is not found ${collectionId}`})
             return null
         }
 

@@ -42,7 +42,7 @@ const RecipeController = {
         };
         if (search) {
             whereClause.RecipeTitle = {
-                [Op.iLike]: `%${search}%`
+                [Op.like]: `%${search}%`
             };
         }
         if (category) {   
