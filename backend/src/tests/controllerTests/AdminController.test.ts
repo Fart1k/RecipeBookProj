@@ -5,7 +5,9 @@ const mocks = vi.hoisted(() => ({
     findAll: vi.fn(),
     findByPk: vi.fn(),
     findAllUsers: vi.fn(),
-    findUserById: vi.fn()
+    findUserById: vi.fn(),
+    destroyComments: vi.fn(),
+    transaction: vi.fn()
 }))
 
 vi.mock("../../db.ts", () => ({
@@ -17,6 +19,12 @@ vi.mock("../../db.ts", () => ({
         users: {
             findAll: mocks.findAllUsers,
             findByPk: mocks.findUserById
+        },
+        comment: {
+            destroy: mocks.destroyComments
+        },
+        sequelize: {
+            transaction: mocks.transaction
         }
     }
 }))
@@ -504,6 +512,153 @@ describe("AdminController", () => {
         await _AdminController.banUser(req, res)
 
         expect(mocks.findUserById).toHaveBeenCalledWith(userId)
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
+    })
+
+    // See test on korrektne, kui kontoller tagastab 200 statuskoodi ja admin saab näha kõiki retsepti
+    test("getAllRecipes_With200status", async () => {
+        const recipes = [
+            {
+                id: "01a1c462-5d99-771d-99d3-ae6307063bfc",
+                RecipeTitle: "recipe1",
+                Status: true
+            },
+            {
+                id: "01a1c463-53d3-714f-8ad5-83119e0cd2ce",
+                RecipeTitle: "recipe2",
+                Status: false
+            }   
+        ]
+
+        mocks.findAll.mockResolvedValue(recipes)
+
+        const req = {
+            query: {}
+        } as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response 
+
+        await _AdminController.getAllRecipes(req, res)
+
+        expect(mocks.findAll).toHaveBeenCalledOnce()
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.json).toHaveBeenCalledWith(recipes)
+    })
+
+    // See test on korrektne, kui kontroller tagastab 500 statuskoodi, sest juhtus API/andmebaasi viga
+    test("getAllRecipes_With500status", async () => {
+        mocks.findAll.mockRejectedValue(new Error("Internal server error"))
+
+        const req = {} as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.getAllRecipes(req, res)
+
+        expect(mocks.findAll).toHaveBeenCalledOnce()
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
+    })
+
+    // See test on korrektne, kui kontroller ei saa leida retsepti ja tagastab 404 statuskoodi
+    test("deleteRecipe_With404status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+
+        mocks.findByPk.mockResolvedValue(null)
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.deleteRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(res.status).toHaveBeenCalledWith(404)
+        expect(res.json).toHaveBeenCalledWith({error: `Recipe with this ID was not found: ${recipeId}`})
+    })
+
+    // See test on korrektne, kui retsept ja sellega seotud kommentaarid on kustutatud ja kontroller tagastab 204 statuskoodi
+    test("deleteRecipe_With204status", async () => {
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+        const recipe = {
+            id: recipeId, 
+            destroy: vi.fn().mockResolvedValue(undefined)
+        }
+
+        const transaction = {}
+
+        mocks.findByPk.mockResolvedValue(recipe)
+        mocks.destroyComments.mockResolvedValue(2)
+
+        mocks.transaction.mockImplementation(async (callback: any) => {
+            await callback(transaction)
+        })
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.deleteRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+
+        expect(mocks.destroyComments).toHaveBeenCalledWith({
+            where: { RecipeId: recipeId },
+            transaction
+        })
+
+        expect(recipe.destroy).toHaveBeenCalledWith({
+            transaction
+        })
+
+        expect(mocks.transaction).toHaveBeenCalledOnce()
+        expect(res.status).toHaveBeenCalledWith(204)
+        expect(res.send).toHaveBeenCalledOnce()
+    })
+
+    // See test on korrektne, kui kontroller tagastab 500 statuskoodi, sest juhtus API/andmebaasi viga
+    test("deleteRecipe_With500status", async () => {
+        mocks.findByPk.mockRejectedValue(new Error("Internal server error"))
+
+        const recipeId = "01a1c462-5d99-771d-99d3-ae6307063bfc"
+
+        const req = {
+            params: {
+                ID: recipeId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.deleteRecipe(req, res)
+
+        expect(mocks.findByPk).toHaveBeenCalledWith(recipeId)
+        expect(mocks.destroyComments).not.toHaveBeenCalled()
+        expect(mocks.transaction).not.toHaveBeenCalled()
         expect(res.status).toHaveBeenCalledWith(500)
         expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
     })
