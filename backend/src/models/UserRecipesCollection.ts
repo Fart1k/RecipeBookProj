@@ -1,10 +1,9 @@
 import { DataTypes, Model, UUIDV4 } from "sequelize"
 import type { InferAttributes, InferCreationAttributes, CreationOptional, Sequelize } from "sequelize";
-import type { Json } from "sequelize/lib/utils";
 
 export class UserRecipesCollection extends Model<InferAttributes<UserRecipesCollection>, InferCreationAttributes<UserRecipesCollection>> {
     declare CollectionName: string
-    declare RecipeIds: Json
+    declare RecipeIds: string[]
     declare UserId: string
     declare id: string
     

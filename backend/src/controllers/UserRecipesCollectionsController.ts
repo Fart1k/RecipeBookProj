@@ -2,7 +2,7 @@ import * as express from "express"
 import { db } from "../db.ts"
 import Utilities from "./Utilities.ts"
 import { v7 as uuidv7 } from "uuid"
-
+import { Op } from "sequelize"
 const UserRecipesCollectionsController = {
     async create(req: express.Request, res: express.Response) {
         const userId = (req as any).user?.id
@@ -96,12 +96,95 @@ const UserRecipesCollectionsController = {
 
         return res.status(200).json(collections)
     },
+    async addRecipe(req: express.Request, res: express.Response) {
+        try {
+            const recipeId = req.params.recipeID as string
+            const collection = await UserRecipesCollectionsController.getCollection(req, res)
+            if (!collection) {
+                return
+            }
+
+            const recipe = await db.recipes.findByPk(recipeId)
+            if (!recipe || (recipe.UserId !== (req as any).user.id && (!recipe.Status || !recipe.IsVisibleToOther))) {
+                return res.status(404).json({error: "Recipe not found"})
+            }
+
+            if (!Array.isArray(collection.RecipeIds)) {
+                return res.status(500).json({error: "Invalid collection data"})
+            }
+
+            const recipeIds = [...collection.RecipeIds]
+            if (recipeIds.includes(recipeId)) {
+                return res.status(400).json({error: "This recipe is already in collection"})
+            }
+
+            recipeIds.push(recipeId)
+            await collection.update({RecipeIds: recipeIds})
+
+            return res.status(200).json({message: "Recipe added to collection successfully"})
+        }
+        catch (error) {
+            res.status(500).json({error: "Internal server error"})
+        }
+    },
+    async deleteRecipe(req: express.Request, res: express.Response) {
+        try {
+            const recipeId = req.params.recipeID as string
+            const collection = await UserRecipesCollectionsController.getCollection(req, res)
+            if (!collection) {
+                return
+            }
+
+            const recipeIds = collection.RecipeIds
+            if (!recipeIds.includes(recipeId)) {
+                return res.status(404).json({error: `This collection does not contain a recipe with that ID: ${recipeId}`})
+            }
+
+            const updatedRecipeIds = recipeIds.filter(id => id !== recipeId)
+            await collection.update({RecipeIds: updatedRecipeIds})
+
+            return res.status(204).send()
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
+    async getRecipes(req: express.Request, res: express.Response) {
+        try {
+            const collectionId = req.params.ID as string
+            const collection = await db.userRecipesCollection.findByPk(collectionId)
+            if (!collection) {
+                return res.status(404).json({error: `Collection with that ID was not found: ${collectionId}`})
+            }
+
+            const recipes = await db.recipes.findAll({
+                attributes: ["id", "RecipeTitle"],
+                where: {
+                    id: {
+                        [Op.in]: collection.RecipeIds
+                    },
+                    [Op.or]:[
+                        {
+                            Status: true,
+                            IsVisibleToOther: true
+                        }
+                    ]
+                }
+            })
+
+            return res.status(200).json(recipes)
+        }
+        catch (error) {
+            console.error(error)
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
     async getCollection(req: express.Request, res: express.Response) {
         let collectionId: string = req.params.ID as string
 
         const collection = await db.userRecipesCollection.findByPk(collectionId)
         if (!collection) {
-            res.status(404).send({error: `Recipe with this ID is not found ${collectionId}`})
+            res.status(404).send({error: `Recipe collection with this ID is not found ${collectionId}`})
             return null
         }
 
