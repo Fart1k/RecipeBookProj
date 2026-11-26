@@ -26,7 +26,7 @@ const RecipeController = {
             Instructions: req.body.Instructions,
             Ingredients: req.body.Ingredients,
             IsVisibleToOther: req.body.IsVisibleToOther,
-            Status: false
+            Status: true,
         };
 
         const createdRecipe = await db.recipes.create(newRecipe);

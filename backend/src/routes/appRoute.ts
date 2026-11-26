@@ -55,6 +55,9 @@ export default (app: express.Application): void => {
   app.route("/recipes/:ID/comments")
     .get(CommentController.getByRecipe)
     .post(authenticateToken, CommentController.create);
+
+
+    
  
   //Admin routes
 

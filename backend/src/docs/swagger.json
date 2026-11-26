@@ -1,1300 +1,1573 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-        "title": "Recipe Book API",
-        "version": "1.0.0",
-        "description": "API for Recipe Book application"
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Recipe Book API",
+    "version": "1.0.0",
+    "description": "API for Recipe Book application"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     },
-    "components": {
-        "securitySchemes": {
-            "bearerAuth": {
-                "type": "http",
-                "scheme": "bearer",
-                "bearerFormat": "JWT"
+    "responses": {
+      "UnauthorizedError": {
+        "description": "Missing or invalid authentication token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Invalid or expired token"
+                }
+              }
             }
+          }
+        }
+      },
+      "AccessDenied": {
+        "description": "Access denied. You dont have enoght permission",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Access denied"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Internal server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Recipes",
+      "description": "Everything about recipes"
+    },
+    {
+      "name": "Users",
+      "description": "User management and authentication"
+    },
+    {
+      "name": "UserRecipesCollections",
+      "description": "User recipe collection management"
+    },
+    {
+      "name": "Comments",
+      "description": "Recipe comments and ratings"
+    },
+    {
+      "name": "Admin",
+      "description": "Administration and moderation"
+    }
+  ],
+  "paths": {
+    "/recipes": {
+      "get": {
+        "tags": [
+          "Recipes"
+        ],
+        "summary": "Get all public and approved recipes",
+        "responses": {
+          "200": {
+            "description": "A list of recipes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                      },
+                      "RecipeTitle": {
+                        "type": "string",
+                        "example": "Spaghetti Carbonara"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Recipes"
+        ],
+        "summary": "Create new recipe",
+        "description": "Creates a new recipe and submits it for admin approval",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "RecipeTitle",
+                  "Instructions",
+                  "Ingredients",
+                  "IsVisibleToOther",
+                  "Status"
+                ],
+                "properties": {
+                  "RecipeTitle": {
+                    "type": "string",
+                    "example": "Spaghetti Carbonara"
+                  },
+                  "Instructions": {
+                    "type": "string",
+                    "example": "Boil spaghetti and mix with eggs and cheese"
+                  },
+                  "Ingredients": {
+                    "type": "string",
+                    "example": "Spaghetti, eggs, cheese"
+                  },
+                  "IsVisibleToOther": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "Status": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
         },
         "responses": {
-            "UnauthorizedError": {
-                "description": "Missing or invalid authentication token",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string",
-                                    "example": "Invalid or expired token"
-                                }
-                            }
-                        }
+          "201": {
+            "description": "Recipe succsessfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "123e4567-e89b-12d3-a456-426614174000"
+                    },
+                    "RecipeTitle": {
+                      "type": "string",
+                      "example": "Spaghetti Carbonara"
+                    },
+                    "Instructions": {
+                      "type": "string",
+                      "example": "Boil spaghetti and mix with eggs and cheese."
+                    },
+                    "Ingredients": {
+                      "type": "string",
+                      "example": "Spaghetti, eggs, Parmesan, pancetta"
+                    },
+                    "IsVisibleToOther": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "Status": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "UserId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
                     }
+                  }
                 }
-            },
-            "AccessDenied": {
-                "description": "Access denied. You dont have enoght permission",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string",
-                                    "example": "Access denied"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "InternalServerError": {
-                "description": "Internal Server Error",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "error": {
-                                    "type": "string",
-                                    "example": "Internal server error"
-                                }
-                            }
-                        }
-                    }
-                }
+              }
             }
+          },
+          "400": {
+            "description": "Missing parameters or invalid data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Missing parameters, please review data."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid or expired token"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
+      }
     },
-    
-    "tags": [
-        {
-            "name": "Recipes",
-            "description": "Everything about recipes"
-        },
-        {
-            "name": "Users",
-            "description": "User management and authentication"
-        },
-        {
-            "name": "UserRecipesCollections",
-            "description": "User recipe collection management"
-        },
-        {
-            "name": "Comments",
-            "description": "Recipe comments and ratings"
-        },
-        {
-            "name": "Admin",
-            "description": "Administration and moderation"
+    "/recipes/mine": {
+      "get": {
+        "tags": [
+          "Recipes"
+        ],
+        "summary": "Get all own recipes",
+        "description": "Returns all recipes belonging to the authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of user's recipes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "RecipeTitle": {
+                      "type": "string",
+                      "example": "Spaghetti Carbonara"
+                    },
+                    "Status": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "IsVisibleToOther": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
         }
-    ],
-    "paths": {
-        "/recipes": {
-            "get": {
-                "tags": ["Recipes"],
-                "summary": "Get all public and approved recipes",
-                "responses": {
-                    "200": {
-                        "description": "A list of recipes",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "string",
-                                                "format": "uuid",
-                                                "example": "123e4567-e89b-12d3-a456-426614174000"
-                                            },
-                                            "RecipeTitle": {
-                                                "type": "string",
-                                                "example": "Spaghetti Carbonara"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": ["Recipes"],
-                "summary": "Create new recipe",
-                "description": "Creates a new recipe and submits it for admin approval",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "RecipeTitle",
-                                    "Instructions",
-                                    "Ingredients",
-                                    "IsVisibleToOther"
-                                ],
-                                "properties": {
-                                    "RecipeTitle" : {
-                                        "type": "string",
-                                        "example": "Spaghetti Carbonara"
-                                    },
-                                    "Instructions": {
-                                        "type": "string",
-                                        "example": "Boil spaghetti and mix with eggs and cheese"
-                                    },
-                                    "Ingredients": {
-                                        "type": "string",
-                                        "example": "Spaghetti, eggs, cheese"
-                                    },
-                                    "IsVisibleToOther": {
-                                        "type": "boolean",
-                                        "example": false
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Recipe succsessfully created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "example": "123e4567-e89b-12d3-a456-426614174000"
-                                        },
-                                        "RecipeTitle": {
-                                            "type": "string",
-                                            "example": "Spaghetti Carbonara"
-                                        },
-                                        "Instructions": {
-                                            "type": "string",
-                                            "example": "Boil spaghetti and mix with eggs and cheese."
-                                        },
-                                        "Ingredients": {
-                                            "type": "string",
-                                            "example": "Spaghetti, eggs, Parmesan, pancetta"
-                                        },
-                                        "IsVisibleToOther": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "Status": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "UserId": {
-                                            "type": "string",
-                                            "format": "uuid"
-                                        },
-                                        "createdAt": {
-                                            "type": "string",
-                                            "format": "date-time"
-                                        },
-                                        "updatedAt": {
-                                            "type": "string",
-                                            "format": "date-time"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Missing parameters or invalid data",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Missing parameters, please review data."
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Missing or invalid authentication token",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Invalid or expired token"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+      }
+    },
+    "/recipes/{ID}": {
+      "get": {
+        "tags": [
+          "Recipes"
+        ],
+        "summary": "Get one recipe",
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "description": "Unique recipe ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
             }
-        },
-        "/recipes/mine": {
-            "get": {
-                "tags": ["Recipes"],
-                "summary": "Get all own recipes",
-                "description": "Returns all recipes belonging to the authenticated user",
-                "security": [
-                    {
-                        "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recipe successfully found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "123e4567-e89b-12d3-a456-426614174000"
+                      },
+                      "RecipeTitle": {
+                        "type": "string",
+                        "example": "Spaghetti Carbonara"
+                      },
+                      "Instructions": {
+                        "type": "string",
+                        "example": "1. Boil spaghetti in salted water. 2. Fry pancetta until crispy. 3. Mix eggs with grated Parmesan. 4. Combine hot spaghetti with pancetta. 5. Add egg mixture and stir until creamy. Serve immediately."
+                      },
+                      "Ingredients": {
+                        "type": "string",
+                        "example": "Spaghetti, eggs, cheese"
+                      },
+                      "ImageURL": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": null
+                      },
+                      "IsVisibleToOther": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "RatingOverall": {
+                        "type": "integer",
+                        "nullable": true,
+                        "example": null
+                      },
+                      "Status": {
+                        "type": "boolean",
+                        "example": true
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "A list of user's recipes",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "properties": {
-                                        "id": {
-                                            "type": "string",
-                                            "format": "uuid"
-                                        },
-                                        "RecipeTitle": {
-                                            "type": "string",
-                                            "example": "Spaghetti Carbonara"
-                                        },
-                                        "Status": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "IsVisibleToOther": {
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError"
-                    }
+                  }
                 }
+              }
             }
-        },
-        "/recipes/{ID}": {
-            "get": {
-                "tags": ["Recipes"],
-                "summary": "Get one recipe",
-                "parameters": [
-                    {
-                        "name": "ID",
-                        "in": "path",
-                        "required": true,
-                        "description": "Unique recipe ID",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "123e4567-e89b-12d3-a456-426614174000"
-                        }
+          },
+          "404": {
+            "description": "Recipe not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Recipe with this ID is not found: 123e4567-e89b-12d3-a456-426614174000"
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Recipe successfully found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "string",
-                                                "format": "uuid",
-                                                "example": "123e4567-e89b-12d3-a456-426614174000"
-                                            },
-                                            "RecipeTitle": {
-                                                "type": "string",
-                                                "example": "Spaghetti Carbonara"
-                                            },
-                                            "Instructions": {
-                                                "type": "string",
-                                                "example": "1. Boil spaghetti in salted water. 2. Fry pancetta until crispy. 3. Mix eggs with grated Parmesan. 4. Combine hot spaghetti with pancetta. 5. Add egg mixture and stir until creamy. Serve immediately."
-                                            },
-                                            "Ingredients": {
-                                                "type": "string",
-                                                "example": "Spaghetti, eggs, cheese"
-                                            },
-                                            "ImageURL": {
-                                                "type": "string",
-                                                "nullable": true,
-                                                "example": null
-                                            },
-                                            "IsVisibleToOther": {
-                                                "type": "boolean",
-                                                "example": false
-                                            },
-                                            "RatingOverall": {
-                                                "type": "integer",
-                                                "nullable": true,
-                                                "example": null
-                                            },
-                                            "Status": {
-                                                "type": "boolean", 
-                                                "example": true
-                                            },
-                                            "createdAt": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            },
-                                            "updatedAt": {
-                                                "type": "string",
-                                                "format": "date-time"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Recipe not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Recipe with this ID is not found: 123e4567-e89b-12d3-a456-426614174000"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                  }
                 }
-            },
-            "put": {
-                "tags": ["Recipes"],
-                "summary": "Modify an existing recipe data",
-                "description": "Updates an existing recipe bt its ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "ID",
-                        "required": true,
-                        "in": "path",
-                        "description": "Unique recipe ID",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "RecipeTitle": {
-                                        "type": "string",
-                                        "example": "Modified Spaghetti Carbonara"
-                                    },
-                                    "Instructions": {
-                                        "type": "string",
-                                        "example": "Boil spaghetti and bla bawldpaowkdpoawkdopa"
-                                    },
-                                    "Ingredients": {
-                                        "type": "string",
-                                        "example": "Milk, sugar"
-                                    },
-                                    "IsVisibleToOther": {
-                                        "type": "boolean",
-                                        "example": true
-                                    },
-                                    "ImageUrl": {
-                                        "type": "string",
-                                        "nullable": true,
-                                        "example": null
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Recipe successfully modified",
-                        "headers": {
-                            "Location": {
-                                "description": "URL of the modified recipe",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "RecipeTitle": {
-                                            "type": "string",
-                                            "example": "Modified Spaghetti Carbonara"
-                                        },
-                                        "Instructions": {
-                                            "type": "string",
-                                            "example": "Boil spaghetti and prepare the sauce."
-                                        },
-                                        "Ingredients": {
-                                            "type": "string",
-                                            "example": "Spaghetti, eggs, Parmesan, bacon"
-                                        },
-                                        "IsVisibleToOther": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "ImageUrl": {
-                                            "type": "string",
-                                            "nullable": true,
-                                            "example": null
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "No ID supplied"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Recipe not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Recipe with this ID is not found. 01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AccessDenied"
-                    }
-                }
-            },
-            "delete": {
-                "tags": ["Recipes"],
-                "summary": "Delete a recipe",
-                "description": "Deletes an existing recipe by ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "ID",
-                        "required": true,
-                        "in": "path",
-                        "description": "Unique recipe ID",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AccessDenied"
-                    },
-                    "404": {
-                        "description": "Recipe not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Recipe with this ID is not found: 01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+              }
             }
-        },
-
-        "/userrecipescollections": {
-            "get": {
-                "tags": ["UserRecipesCollections"],
-                "summary": "Get all recipe collections",
-                "responses": {
-                    "200": {
-                        "description": "Returns a list of recipe collections",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "properties": {
-                                            "id": {
-                                                "type": "string",
-                                                "format": "uuid",
-                                                "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                            },
-                                            "CollectionName": {
-                                                "type": "string",
-                                                "example": "Dinner"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": ["UserRecipesCollections"],
-                "summary": "Create new user recipes collection",
-                "description": "Creates a new collection",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "CollectionName",
-                                    "CollectionDescription",
-                                    "RecipeIds"
-                                ],
-                                "properties": {
-                                    "CollectionName": {
-                                        "type": "string",
-                                        "example": "Dinner"
-                                    },
-                                    "CollectionDescription": {
-                                        "type": "string",
-                                        "example": "Recipes for dinner"
-                                    },
-                                    "RecipeIds": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "format": "uuid"
-                                        },
-                                        "example": ["01a1c462-5d99-771d-99d3-ae6307063bfc"]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Collection is successfully created",
-                        "headers": {
-                            "Location": {
-                                "description": "URL of the created collection",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                        },
-                                        "CollectionName": {
-                                            "type": "string",
-                                            "example": "Dinner"
-                                        },
-                                        "CollectionDescription": {
-                                            "type": "string",
-                                            "example": "Recipes for collection"
-                                        },
-                                        "RecipeIds": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "format": "uuid"
-                                            },
-                                            "example": ["01a1c462-5d99-771d-99d3-ae6307063bfc"]
-                                        },
-                                        "UserId": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                        },
-                                        "createdAt": {
-                                            "type": "string",
-                                            "format": "date-time"
-                                        },
-                                        "updatedAt": {
-                                            "type": "string",
-                                            "format": "date-time"
-                                        },
-                                        "User": {
-                                            "type": "object",
-                                            "description": "Collection creator",
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "format": "uuid",
-                                                    "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                                },
-                                                "UserName": {
-                                                    "type": "string",
-                                                    "example": "Daun"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Missing parameters or invalid data",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Missing parameters, please review data."
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    }
-                }
-            }
-        },
-        "/userrecipescollections/{ID}": {
-            "get": {
-                "tags": ["UserRecipesCollections"],
-                "summary": "Get one collection",
-                "parameters": [
-                    {
-                        "name": "ID",
-                        "in": "path",
-                        "required": true,
-                        "description": "Unique recipe ID",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Collection successfully found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
-                                        },
-                                        "CollectionName": {
-                                            "type": "string",
-                                            "example": "Dinner"
-                                        },
-                                        "CollectionDescription": {
-                                            "type": "string",
-                                            "example": "Collection for dinner"
-                                        },
-                                        "RecipeIds": {
-                                            "type": "array",
-                                            "items": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "format": "uuid"
-                                                },
-                                                "example": ["01a1c462-5d99-771d-99d3-ae6307063bfc"]
-                                            }
-                                        },
-                                        "UserId": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
-                                        },
-                                        "createdAt": {
-                                            "type": "string",
-                                            "format":"date-time"
-                                        },
-                                        "updatedAt": {
-                                            "type": "string",
-                                            "format":"date-time"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Collection not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Recipe Collection with thid ID is not found: 01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": ["UserRecipesCollections"],
-                "summary": "Modify an existing collection data",
-                "description": "Updates an existing collection by its ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "ID",
-                        "in": "path",
-                        "required": true,
-                        "description": "Unique collection ID",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "CollectionName",
-                                    "CollectionDescription",
-                                    "RecipeIds"
-                                ],
-                                "properties": {
-                                    "CollectionName": {
-                                        "type": "string",
-                                        "example": "Updated name"
-                                    },
-                                    "CollectionDescription": {
-                                        "type": "string",
-                                        "example": "Updated description"
-                                    },
-                                    "RecipeIds": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "format": "uuid"  
-                                        },
-                                        "example": ["01a1c462-5d99-771d-99d3-ae6307063bfc"]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Collection successfully modified",
-                        "headers": {
-                            "Location": {
-                                "description": "URL of the modified collection",
-                                "schema": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                       "CollectionName": {
-                                            "type": "string",
-                                            "example": "Modified Dinner"
-                                        },
-                                        "CollectionDescription": {
-                                            "type": "string",
-                                            "example": "Updated collection for dinner"
-                                        },
-                                        "RecipeIds": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "string",
-                                                "format": "uuid"
-                                            },
-                                            "example": [
-                                                "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                            ]
-                                        },
-                                        "updatedAt": {
-                                            "type": "string",
-                                            "format": "date-time"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Incorrect or missing data",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "examples": {
-                                    "MissingID": {
-                                        "value": {
-                                            "error": "No ID supplied"
-                                        }
-                                    },
-                                    "IncorrectData": {
-                                        "value": {
-                                            "error": "Incorrect or missing data"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AccessDenied"
-                    },
-                    "404": {
-                        "description": "Collection not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Recipe collection with this ID is not found: 01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": ["UserRecipesCollections"],
-                "summary": "Delete a collection",
-                "description": "Deletes an existing collection by ID",
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "ID",
-                        "required": true,
-                        "in": "path",
-                        "description": "Unique  collection ID",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid",
-                            "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/UnauthorizedError"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AccessDenied"
-                    },
-                    "404": {
-                        "description": "Collection not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Collection with this ID is not found: 01a1c463-53d3-714f-8ad5-83119e0cd2ce"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-
-        "/users/register": {
-            "post": {
-                "tags": ["Users"],
-                "summary": "Register a new user",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "EmailAddress",
-                                    "Password",
-                                    "UserName"
-                                ],
-                                "properties": {
-                                    "EmailAddress": {
-                                        "type": "string",
-                                        "example": "test@example.com"
-                                    },
-                                    "Password": {
-                                        "type": "string",
-                                        "example": "TestPassword123"
-                                    },
-                                    "UserName": {
-                                        "type": "string",
-                                        "example": "TestUser"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "User is successfully registered",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "User registered successfully"
-                                        },
-                                        "userId": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                        },
-                                        "username": {
-                                            "type": "string",
-                                            "example": "TestUser"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Missing parameters or email is already in use",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "examples": {
-                                    "MissingParameters": {
-                                        "value": {
-                                            "error": "Missing parameters. Please review data"
-                                        }
-                                    },
-                                    "ExistingEmail": {
-                                        "value": {
-                                            "error": "Email is already in use"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Default user role not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                     "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        } 
-                                     }
-                                },
-                                "examples": {
-                                    "Internal error": {
-                                        "value": {
-                                            "error": "Internal server error"
-                                        }
-                                    },
-                                    "UserRoleNotFound": {
-                                        "value": {
-                                            "error": "Default user role not found"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/users/login": {
-            "post": {
-                "tags": ["Users"],
-                "summary": "Login to an existing account",
-                "description": "Authenticates a user and returns a JWT token valid for 24 hours",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "object",
-                                "required": [
-                                    "EmailAddress",
-                                    "Password"
-                                ],
-                                "properties": {
-                                    "EmailAddress": {
-                                        "type": "string",
-                                        "example": "test@example.com"
-                                    },
-                                    "Password": {
-                                        "type": "string",
-                                        "example": "TestPassword123"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Login successful",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Login successful"
-                                        },
-                                        "token": {
-                                            "type": "string",
-                                            "description": "JWT auth token"
-                                        },
-                                        "user": {
-                                            "type": "object",
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "format": "uuid",
-                                                    "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
-                                                },
-                                                "username": {
-                                                    "type": "string",
-                                                    "example": "TestUser"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "example": "test@example.com"
-                                                },
-                                                "role": {
-                                                    "type": "string",
-                                                    "example": "user"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Email and password are required",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Email and password are required"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid email or password",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Invalid email or password"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Account is not active",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Account is not active"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "User role not found, JWT secret is not configured or internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "examples": {
-                                    "RoleNotFound": {
-                                        "value": {
-                                            "error": "User role was not found"
-                                        }
-                                    },
-                                    "JWTtokenError": {
-                                        "value": {
-                                            "error": "JWT secret is not configured"
-                                        }
-                                    },
-                                    "InternalError": {
-                                        "value": {
-                                            "error": "Internal server error"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }               
-            }
+          }
         }
+      },
+      "put": {
+        "tags": [
+          "Recipes"
+        ],
+        "summary": "Modify an existing recipe data",
+        "description": "Updates an existing recipe bt its ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ID",
+            "required": true,
+            "in": "path",
+            "description": "Unique recipe ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "RecipeTitle": {
+                    "type": "string",
+                    "example": "Modified Spaghetti Carbonara"
+                  },
+                  "Instructions": {
+                    "type": "string",
+                    "example": "Boil spaghetti and bla bawldpaowkdpoawkdopa"
+                  },
+                  "Ingredients": {
+                    "type": "string",
+                    "example": "Milk, sugar"
+                  },
+                  "IsVisibleToOther": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "ImageUrl": {
+                    "type": "string",
+                    "nullable": true,
+                    "example": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recipe successfully modified",
+            "headers": {
+              "Location": {
+                "description": "URL of the modified recipe",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "RecipeTitle": {
+                      "type": "string",
+                      "example": "Modified Spaghetti Carbonara"
+                    },
+                    "Instructions": {
+                      "type": "string",
+                      "example": "Boil spaghetti and prepare the sauce."
+                    },
+                    "Ingredients": {
+                      "type": "string",
+                      "example": "Spaghetti, eggs, Parmesan, bacon"
+                    },
+                    "IsVisibleToOther": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "ImageUrl": {
+                      "type": "string",
+                      "nullable": true,
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "No ID supplied"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipe not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Recipe with this ID is not found. 01a1c462-5d99-771d-99d3-ae6307063bfc"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccessDenied"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Recipes"
+        ],
+        "summary": "Delete a recipe",
+        "description": "Deletes an existing recipe by ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ID",
+            "required": true,
+            "in": "path",
+            "description": "Unique recipe ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccessDenied"
+          },
+          "404": {
+            "description": "Recipe not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Recipe with this ID is not found: 01a1c462-5d99-771d-99d3-ae6307063bfc"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/userrecipescollections": {
+      "get": {
+        "tags": [
+          "UserRecipesCollections"
+        ],
+        "summary": "Get all recipe collections",
+        "responses": {
+          "200": {
+            "description": "Returns a list of recipe collections",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                      },
+                      "CollectionName": {
+                        "type": "string",
+                        "example": "Dinner"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "UserRecipesCollections"
+        ],
+        "summary": "Create new user recipes collection",
+        "description": "Creates a new collection",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "CollectionName",
+                  "CollectionDescription",
+                  "RecipeIds"
+                ],
+                "properties": {
+                  "CollectionName": {
+                    "type": "string",
+                    "example": "Dinner"
+                  },
+                  "CollectionDescription": {
+                    "type": "string",
+                    "example": "Recipes for dinner"
+                  },
+                  "RecipeIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "example": [
+                      "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Collection is successfully created",
+            "headers": {
+              "Location": {
+                "description": "URL of the created collection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                    },
+                    "CollectionName": {
+                      "type": "string",
+                      "example": "Dinner"
+                    },
+                    "CollectionDescription": {
+                      "type": "string",
+                      "example": "Recipes for collection"
+                    },
+                    "RecipeIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "example": [
+                        "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                      ]
+                    },
+                    "UserId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "User": {
+                      "type": "object",
+                      "description": "Collection creator",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                        },
+                        "UserName": {
+                          "type": "string",
+                          "example": "Daun"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing parameters or invalid data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Missing parameters, please review data."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      }
+    },
+    "/userrecipescollections/{ID}": {
+      "get": {
+        "tags": [
+          "UserRecipesCollections"
+        ],
+        "summary": "Get one collection",
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "description": "Unique recipe ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Collection successfully found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
+                    },
+                    "CollectionName": {
+                      "type": "string",
+                      "example": "Dinner"
+                    },
+                    "CollectionDescription": {
+                      "type": "string",
+                      "example": "Collection for dinner"
+                    },
+                    "RecipeIds": {
+                      "type": "array",
+                      "items": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "example": [
+                          "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                        ]
+                      }
+                    },
+                    "UserId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Collection not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Recipe Collection with thid ID is not found: 01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "UserRecipesCollections"
+        ],
+        "summary": "Modify an existing collection data",
+        "description": "Updates an existing collection by its ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "description": "Unique collection ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "CollectionName",
+                  "CollectionDescription",
+                  "RecipeIds"
+                ],
+                "properties": {
+                  "CollectionName": {
+                    "type": "string",
+                    "example": "Updated name"
+                  },
+                  "CollectionDescription": {
+                    "type": "string",
+                    "example": "Updated description"
+                  },
+                  "RecipeIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "example": [
+                      "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Collection successfully modified",
+            "headers": {
+              "Location": {
+                "description": "URL of the modified collection",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "CollectionName": {
+                      "type": "string",
+                      "example": "Modified Dinner"
+                    },
+                    "CollectionDescription": {
+                      "type": "string",
+                      "example": "Updated collection for dinner"
+                    },
+                    "RecipeIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "example": [
+                        "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Incorrect or missing data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "MissingID": {
+                    "value": {
+                      "error": "No ID supplied"
+                    }
+                  },
+                  "IncorrectData": {
+                    "value": {
+                      "error": "Incorrect or missing data"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccessDenied"
+          },
+          "404": {
+            "description": "Collection not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Recipe collection with this ID is not found: 01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "UserRecipesCollections"
+        ],
+        "summary": "Delete a collection",
+        "description": "Deletes an existing collection by ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ID",
+            "required": true,
+            "in": "path",
+            "description": "Unique  collection ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "01a19e84-55c5-7590-83b5-2c8b4b3c0ffe"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "$ref": "#/components/responses/AccessDenied"
+          },
+          "404": {
+            "description": "Collection not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Collection with this ID is not found: 01a1c463-53d3-714f-8ad5-83119e0cd2ce"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "EmailAddress",
+                  "Password",
+                  "UserName"
+                ],
+                "properties": {
+                  "EmailAddress": {
+                    "type": "string",
+                    "example": "test@example.com"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "example": "TestPassword123"
+                  },
+                  "UserName": {
+                    "type": "string",
+                    "example": "TestUser"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User is successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "User registered successfully"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "TestUser"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing parameters or email is already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "MissingParameters": {
+                    "value": {
+                      "error": "Missing parameters. Please review data"
+                    }
+                  },
+                  "ExistingEmail": {
+                    "value": {
+                      "error": "Email is already in use"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default user role not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "Internal error": {
+                    "value": {
+                      "error": "Internal server error"
+                    }
+                  },
+                  "UserRoleNotFound": {
+                    "value": {
+                      "error": "Default user role not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Login to an existing account",
+        "description": "Authenticates a user and returns a JWT token valid for 24 hours",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "EmailAddress",
+                  "Password"
+                ],
+                "properties": {
+                  "EmailAddress": {
+                    "type": "string",
+                    "example": "test@example.com"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "example": "TestPassword123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Login successful"
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "JWT auth token"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "example": "01a1c462-5d99-771d-99d3-ae6307063bfc"
+                        },
+                        "username": {
+                          "type": "string",
+                          "example": "TestUser"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "test@example.com"
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "user"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Email and password are required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Email and password are required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid email or password"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Account is not active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Account is not active"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "User role not found, JWT secret is not configured or internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "RoleNotFound": {
+                    "value": {
+                      "error": "User role was not found"
+                    }
+                  },
+                  "JWTtokenError": {
+                    "value": {
+                      "error": "JWT secret is not configured"
+                    }
+                  },
+                  "InternalError": {
+                    "value": {
+                      "error": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/recipes/{ID}/comments": {
+            "get": {
+              "tags": [
+                "Comments"
+              ],
+              "summary": "Get all comments for a recipe",
+              "parameters": [
+                {
+                  "name": "ID",
+                  "in": "path",
+                  "required": true,
+                  "description": "Recipe unique ID",
+                  "schema": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "List of comments retrieved successfully"
+                },
+                "404": {
+                  "description": "Recipe not found"
+                }
+              }
+            },
+            "post": {
+              "tags": [
+                "Comments"
+              ],
+              "summary": "Create a comment on a recipe",
+              "security": [
+                {
+                  "bearerAuth": []
+                }
+              ],
+              "parameters": [
+                {
+                  "name": "ID",
+                  "in": "path",
+                  "required": true,
+                  "description": "Recipe unique ID",
+                  "schema": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                  }
+                }
+              ],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "example": "Delicious recipe! Loved it."
+                        },
+                        "rating": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 5,
+                          "example": 5
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {
+                  "description": "Comment created successfully"
+                },
+                "400": {
+                  "description": "Bad request"
+                },
+                "401": {
+                  "$ref": "#/components/responses/UnauthorizedError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recipes/{ID}/comments": {
+      "get": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Get comments for a recipe",
+        "description": "Returns all comments for the specified recipe, including the comment author's user ID and username.",
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "description": "Unique recipe ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments for the recipe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "CommentBody": {
+                        "type": "string"
+                      },
+                      "Rating": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 1,
+                        "maximum": 5
+                      },
+                      "Author": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "RecipeId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "CommentListId": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "User": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Add a comment to a recipe",
+        "description": "Creates a comment for a public, approved recipe. A rating between 1 and 5 is required; commentText is optional. The recipe's overall rating is recalculated.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ID",
+            "in": "path",
+            "required": true,
+            "description": "Unique recipe ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "123e4567-e89b-12d3-a456-426614174000"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "rating"
+                ],
+                "properties": {
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "example": 5
+                  },
+                  "commentText": {
+                    "type": "string",
+                    "example": "Delicious recipe!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment created successfully"
+          },
+          "400": {
+            "description": "Rating is missing or is not between 1 and 5"
+          },
+          "401": {
+            "description": "Authentication token is missing or invalid"
+          },
+          "404": {
+            "description": "Recipe not found, not approved, or not public"
+          }
+        }
+      }
     }
+  }
 }
