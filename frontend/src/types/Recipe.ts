@@ -6,7 +6,7 @@ export interface RecipeSummary {
 }
 //getbyid/modifybyid
 export interface Recipe {
-    if: string,
+    id: string,
     RecipeName: string,
     RecipeDescription: string,
     CategoryID: string,

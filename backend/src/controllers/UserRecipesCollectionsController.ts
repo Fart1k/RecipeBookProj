@@ -96,6 +96,59 @@ const UserRecipesCollectionsController = {
 
         return res.status(200).json(collections)
     },
+    async addRecipe(req: express.Request, res: express.Response) {
+        try {
+            const recipeId = req.params.recipeID as string
+            const collection = await UserRecipesCollectionsController.getCollection(req, res)
+            if (!collection) {
+                return
+            }
+
+            const recipe = await db.recipes.findByPk(recipeId)
+            if (!recipe || (recipe.UserId !== (req as any).user.id && (!recipe.Status || !recipe.IsVisibleToOther))) {
+                return res.status(404).json({error: "Recipe not found"})
+            }
+
+            if (!Array.isArray(collection.RecipeIds)) {
+                return res.status(500).json({error: "Invalid collection data"})
+            }
+
+            const recipeIds = [...collection.RecipeIds]
+            if (recipeIds.includes(recipeId)) {
+                return res.status(400).json({error: "This recipe is already in collection"})
+            }
+
+            recipeIds.push(recipeId)
+            await collection.update({RecipeIds: recipeIds})
+
+            return res.status(200).json({message: "Recipe added to collection successfully"})
+        }
+        catch (error) {
+            res.status(500).json({error: "Internal server error"})
+        }
+    },
+    async deleteRecipe(req: express.Request, res: express.Response) {
+        try {
+            const recipeId = req.params.recipeID as string
+            const collection = await UserRecipesCollectionsController.getCollection(req, res)
+            if (!collection) {
+                return
+            }
+
+            const recipeIds = collection.RecipeIds
+            if (!recipeIds.includes(recipeId)) {
+                return res.status(404).json({error: `This collection does not contain a recipe with that ID: ${recipeId}`})
+            }
+
+            const updatedRecipeIds = recipeIds.filter(id => id !== recipeId)
+            await collection.update({RecipeIds: updatedRecipeIds})
+
+            return res.status(204).send()
+        }
+        catch (error) {
+            return res.status(500).json({error: "Internal server error"})
+        }
+    },
     async getCollection(req: express.Request, res: express.Response) {
         let collectionId: string = req.params.ID as string
 
