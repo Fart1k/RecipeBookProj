@@ -43,7 +43,7 @@ export default (app: express.Application): void => {
     .put(authenticateToken, UserRecipesCollectionController.modifyById)
     .delete(authenticateToken, UserRecipesCollectionController.deleteById)
 
-  app.route("/userrecipescollections/:collectionID/recipe/:recipeID")
+  app.route("/userrecipescollections/:ID/recipe/:recipeID")
     .put(authenticateToken, UserRecipesCollectionController.addRecipe)
     .delete(authenticateToken, UserRecipesCollectionController.deleteRecipe)
 
