@@ -56,14 +56,14 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
         };
 
         res.locals.userId = user.id;
-
-        next();
     } 
     catch (error) {
         console.error(error);
 
         return res.status(500).json({error: "Internal server error"});
     }
+    
+    next();
 };
 
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
