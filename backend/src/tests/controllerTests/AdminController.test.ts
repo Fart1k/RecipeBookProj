@@ -4,7 +4,8 @@ import type { Request, Response } from "express";
 const mocks = vi.hoisted(() => ({
     findAll: vi.fn(),
     findByPk: vi.fn(),
-    findAllUsers: vi.fn()
+    findAllUsers: vi.fn(),
+    findUserById: vi.fn()
 }))
 
 vi.mock("../../db.ts", () => ({
@@ -14,7 +15,8 @@ vi.mock("../../db.ts", () => ({
             findByPk: mocks.findByPk
         },
         users: {
-            findAll: mocks.findAllUsers
+            findAll: mocks.findAllUsers,
+            findByPk: mocks.findUserById
         }
     }
 }))
@@ -250,6 +252,7 @@ describe("AdminController", () => {
         expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
     })
 
+    // See test on korrektne, kui kontroller tagastab 200 statuskoodi, isegi kui ta ei leia ühtegi kasutajat, ta tagastab tühja ARRAY
     test("getAllUsers_With200status", async () => {
         const users = [
             {
@@ -283,9 +286,112 @@ describe("AdminController", () => {
         expect(res.json).toHaveBeenCalledWith(users)
     })
 
+    // See test on korrektne, kui kontoller tagastab 500 statuskoodi, sest juhtus mingi API/andmebaasi viga
     test("getAllUsers_With500status", async () => {
         mocks.findAllUsers.mockRejectedValue(new Error("Internal server error"))
 
-        
+        const req = {} as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.getAllUsers(req, res)
+
+        expect(mocks.findAllUsers).toHaveBeenCalledExactlyOnceWith({
+            attributes: {
+                exclude: ["PasswordHash"]
+            }
+        })
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
     })
+
+    // See test on korrektne, kui kontroller tagastab 404 statuskoodi, sest ei saa leida kasutajat vastava ID-ga
+    test("getById_With404status", async () => {
+        const userId = "01a1c462-5d99-771d-99d3-ae6307063wwc"
+        mocks.findUserById.mockResolvedValue(null)
+
+        const req = {
+            params: {
+                ID: userId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.getById(req, res)
+
+        expect(mocks.findUserById).toHaveBeenCalledExactlyOnceWith(userId, {
+            attributes: {
+                exclude: ["PasswordHash"]
+            }
+        })
+        expect(res.status).toHaveBeenCalledWith(404)
+        expect(res.json).toHaveBeenCalledWith({error: `User with this ID was not found: ${userId}`})
+    })
+
+    // See test on korrektne, kui kontroller tagastab 200 statuskoodi ja kasutajat, mida ta leidis
+    test("getById_With200status", async () => {
+        const userId = "01a1c462-5d99-771d-99d3-ae6307063wwc"
+        const user = {
+            id: userId,
+            UserName: "TestUser",
+            EmailAddress: "test@example.com"
+        }
+        mocks.findUserById.mockResolvedValue(user)
+
+        const req = {
+            params: {
+                ID: userId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.getById(req, res)
+
+        expect(mocks.findUserById).toHaveBeenCalledExactlyOnceWith(userId, {
+            attributes: {
+                exclude: ["PasswordHash"]
+            }
+        })
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.json).toHaveBeenCalledWith(user)
+    })
+
+    // See test on korrektne, kui kontroller tagastab 500 statuskoodi, sest toimus mingi API/andmebaasi viga
+    test("getById_With500status", async () => {
+        mocks.findUserById.mockRejectedValue(new Error("Internal server error"))
+        const userId = "01a1c462-5d99-771d-99d3-ae6307063wwc"
+        const req = {
+            params: {
+                ID: userId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.getById(req, res)
+        
+        expect(mocks.findUserById).toHaveBeenCalledExactlyOnceWith(userId, {
+            attributes: {
+                exclude: ["PasswordHash"]
+            }
+        })
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
+    })
+
+    
 })
