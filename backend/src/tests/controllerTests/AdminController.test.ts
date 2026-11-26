@@ -393,5 +393,118 @@ describe("AdminController", () => {
         expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
     })
 
-    
+    // See test on korrektne, kui admin proovib ise enda blokeerida ja kontroller tagastab 400 statuskoodi
+    test("banUser_With400status", async () => {
+        const userId = "01a1c462-5d99-771d-99d3-ae6307063wwc"
+
+        const req = {
+            params: {
+                ID: userId
+            },
+            user: {
+                id: userId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.banUser(req, res)
+
+        expect(mocks.findUserById).not.toHaveBeenCalled()
+        expect(res.status).toHaveBeenCalledWith(400)
+        expect(res.json).toHaveBeenCalledWith({error: "You cannot ban yourself"})
+    })
+
+    // See test on korrektne, kui admin sisestas vale kasutajaID ja kontroller tagastas 404 statuskoodi
+    test("banUser_With404status", async () => {
+        const bannedUserId = "01a1c462-5d99-771d-99d3-ae6307063wwc"
+        const adminId = "01a1c462-5d99-771d-99d3-ae6307063awd"
+
+        mocks.findUserById.mockResolvedValue(null)
+
+        const req = { 
+            params: {
+                ID: bannedUserId
+            },
+            user: {
+                id: adminId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.banUser(req, res)
+
+        expect(mocks.findUserById).toHaveBeenCalledWith(bannedUserId)
+        expect(res.status).toHaveBeenCalledWith(404)
+        expect(res.json).toHaveBeenCalledWith({error: `User with this ID was not found: ${bannedUserId}`})
+    })
+
+    // See test on korrektne, kui kasutaja on blokeeritud ja tema status on muudetud.
+    test("banUser_With200status", async () => {
+        const bannedUser = {
+            id: "01a1c462-5d99-771d-99d3-ae6307063wwc",
+            UserStatus: "verified",
+            save: vi.fn().mockResolvedValue(undefined)
+        }
+        mocks.findUserById.mockResolvedValue(bannedUser)
+
+        const adminId = "01a1c462-5d99-771d-99d3-ae6307063awd"
+
+        const req = {
+            params: {
+                ID: bannedUser.id
+            },
+            user: {
+                id: adminId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.banUser(req, res)
+
+        expect(mocks.findUserById).toHaveBeenCalledWith(bannedUser.id)
+        expect(bannedUser.UserStatus).toBe("banned")
+        expect(bannedUser.save).toHaveBeenCalledOnce()
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.json).toHaveBeenCalledWith({message: "User banned successfully"})
+    })
+
+    // See test on korrektne, kui konroller tagastas 500 statuskoodi, sest juhtus API/andmebaasi viga
+    test("banUser_With500status", async () => {
+        const userId = "01a1c462-5d99-771d-99d3-ae6307063wwc"
+        const adminId = "01a1c462-5d99-771d-99d3-ae6307063awd"
+
+        mocks.findUserById.mockRejectedValue(new Error("Internal server error"))
+
+        const req = {
+            params: {
+                ID: userId
+            },
+            user: {
+                id: adminId
+            }
+        } as unknown as Request
+
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            json: vi.fn().mockReturnThis()
+        } as unknown as Response
+
+        await _AdminController.banUser(req, res)
+
+        expect(mocks.findUserById).toHaveBeenCalledWith(userId)
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({error: "Internal server error"})
+    })
 })
